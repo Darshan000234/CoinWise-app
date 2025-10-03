@@ -1,0 +1,45 @@
+@import "tailwindcss";
+:root {
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+               "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body{
+    background-color: #121212;
+    color: white;
+    font-family: var(--font-sans);
+    transition: width 0.5s ease-in-out, margin 0.5s ease-in-out;
+}
+/* Global CSS (e.g., index.css) */
+/* Global CSS (index.css or App.css) */
+.custom-scrollbar {
+  scrollbar-width: thin;               /* Firefox */
+  scrollbar-color: #3b82f6 transparent; /* thumb color & track fallback */
+  padding-right: 4px;                  /* space from right edge */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;                          /* width of scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;             /* make track transparent */
+  margin: 4px 0;                       /* space from top and bottom */
+  border-radius: 8px;                  /* rounded track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #3b82f6;           /* thumb color */
+  border-radius: 8px;
+  border: 2px solid transparent;       /* space around thumb for floating look */
+  background-clip: content-box;        /* make thumb smaller inside border */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #2563eb;           /* darker on hover */
+  transition: background-color 0.2s ease;
+}

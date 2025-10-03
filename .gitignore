@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+
+# Env files
+*.env
+Google_OAuth.json
+
+# Build output
+dist/
+build/
