@@ -8,9 +8,12 @@ const budgets = [
   { category: "Shopping", limit: 200, spent: 50 },
 ];
 
-const BudgetGoals = () => {
+const BudgetGoals = ({isCollapsed}) => {
   return (
-    <div className="w-[780px] bg-[#1a1a1a] rounded-2xl p-6 shadow-md border border-gray-700 mt-8">
+    <div
+      className="bg-[#1a1a1a] rounded-2xl p-6 shadow-md mt-8 transition-all duration-500 ease-in-out"
+      style={{ width: isCollapsed ? "890px" : "750px" }}
+    >
       <h2 className="text-xl font-semibold mb-5 text-white">Budget & Goals</h2>
 
       {budgets.map((item, index) => {

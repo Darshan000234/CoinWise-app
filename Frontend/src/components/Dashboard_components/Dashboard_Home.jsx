@@ -3,8 +3,11 @@ import AddTransaction from './Home_Components/AddTransaction'
 import Recent_Transaction from './Home_Components/Recent_Transaction'
 import FinanceSummary from './Home_Components/FinanceSummary'
 import BudgetGoals from './Home_Components/BudgetGoals'
+import { useOutletContext } from 'react-router-dom'
+
 
 const Dashboard_Home = () => {
+  const {isCollapsed} = useOutletContext();
   return (
     <div>
       <div>
@@ -37,13 +40,13 @@ const Dashboard_Home = () => {
             <AddTransaction />
           </div>
           <div>
-            <Recent_Transaction />
-            <BudgetGoals />
+            <Recent_Transaction isCollapsed={isCollapsed}/>
+            <BudgetGoals isCollapsed={isCollapsed}/>
           </div>
         </div>
         <div className="flex justify-start w-full">
-          <div className="flex-1 max-w-[1278px] transition-all duration-500 ease-in-out">
-            <FinanceSummary />
+          <div className="w-full transition-all duration-500 ease-in-out">
+            <FinanceSummary isCollapsed={isCollapsed}/>
           </div>
         </div>
       </div>

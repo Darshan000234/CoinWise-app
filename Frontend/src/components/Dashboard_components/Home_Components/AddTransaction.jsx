@@ -1,12 +1,17 @@
+import axios from "axios";
 import React, { useState, useRef, useEffect } from "react";
 
+
+const URL = import.meta.env.VITE_URL;
 const AddTransaction = () => {
   const [form, setForm] = useState({
+    date: "",
     amount: "",
     category: "",
     type: "",
-    notes: "",
+    notes: ""
   });
+
 
   const [customCategory, setCustomCategory] = useState(""); // NEW state
   const [open, setOpen] = useState(false);
@@ -31,7 +36,7 @@ const AddTransaction = () => {
   };
 
   const handleCategorySelect = (cat) => {
-    setForm((prev) => ({ ...prev, category: cat })); 
+    setForm((prev) => ({ ...prev, category: cat }));
     setCustomCategory(""); // clear custom when dropdown is selected
     setOpen(false);
   };
@@ -39,17 +44,30 @@ const AddTransaction = () => {
   const handleCustomCategory = (e) => {
     const value = e.target.value;
     setCustomCategory(value);
-    setForm((prev) => ({ ...prev, category: value ? "" : prev.category })); 
-    // clear dropdown selection if user types something
+    setForm((prev) => ({ ...prev, category: value ? "" : prev.category }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const finalCategory = customCategory || form.category;
-    console.log("Transaction Added:", { ...form, category: finalCategory });
 
-    setForm({ amount: "", category: "", type: "", notes: "" });
-    setCustomCategory("");
+    if (!finalCategory) {
+      toast.error("Category is required");
+      return;
+    }
+    const transactionPayload = {
+      ...form,
+      category: finalCategory,
+      date: (!form.date || form.date === "01/01/0001") ? "" : form.date
+    };
+    try {
+      const res = await axios.post(`${URL}/transaction/add`, transactionPayload, { withCredentials: true });
+      toast.success(res.data.message);
+      setForm({ amount: "", category: "", type: "", notes: "", date: "" });
+      setCustomCategory("");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
+    }
   };
 
   useEffect(() => {
@@ -63,10 +81,19 @@ const AddTransaction = () => {
   }, []);
 
   return (
-    <div className="w-[450px] h-[600px] p-6 bg-[#1a1a1a] rounded-2xl shadow-md border border-gray-700">
+    <div className="w-[450px] h-auto p-6 bg-[#1a1a1a] rounded-2xl shadow-md">
       <h2 className="text-xl font-semibold mb-5 text-white">Add Transaction</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Date */}
+        <input
+          type="date"
+          name="date"
+          value={form.date}
+          onChange={handleChange}
+          className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 custom-date"
+        />
+
         {/* Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -145,11 +172,8 @@ const AddTransaction = () => {
                 name="type"
                 value="income"
                 checked={form.type === "income"}
-                onClick={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    type: prev.type === "income" ? "" : "income",
-                  }))
+                onChange={() =>
+                  setForm((prev) => ({ ...prev, type: "income" }))
                 }
                 required
                 className="accent-blue-500"
@@ -162,11 +186,8 @@ const AddTransaction = () => {
                 name="type"
                 value="expense"
                 checked={form.type === "expense"}
-                onClick={() =>
-                  setForm((prev) => ({
-                    ...prev,
-                    type: prev.type === "expense" ? "" : "expense",
-                  }))
+                onChange={() =>
+                  setForm((prev) => ({ ...prev, type: "expense" }))
                 }
                 required
                 className="accent-red-500"

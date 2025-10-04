@@ -1,95 +1,97 @@
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
-const URL = import.meta.env.VITE_URL || "http://localhost:3000";
-const Recent_Transaction = () => {
-  const [data, setData] = useState([]);;
+const URL = import.meta.env.VITE_URL;
 
-  // useEffect(() => {
-  //   const getData = async () =>{
-  //     try {
-  //       let res = await axios.get(`${URL}/transaction`,{withCredentials:true});
+const Recent_Transaction = ({ isCollapsed }) => {
+  const [data, setData] = useState([]);
 
-  //     } catch (error) {
-  //       toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
-  //     }
-  //   }
-  //   getData();
-  // }, [])
-  
-  const handleDelete = (index) => {
-    const newData = data.filter((_, i) => i !== index);
-    setData(newData);
-  };
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const res = await axios.get(`${URL}/transaction?limit=6`, { withCredentials: true });
+        setData(res.data.data);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
+      }
+    };
+    getData();
+    const interval = setInterval(getData, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const handleChange = (index, field, value) => {
-    const newData = [...data];
-    newData[index][field] = value;
-    setData(newData);
+  const handleDelete = async (index) => {
+    try {
+      const id = data[index]._id;
+      const res = await axios.post(`${URL}/transaction/delete`, { _id: id }, { withCredentials: true });
+      toast.success(res.data.message);
+      setData(prev => prev.filter((_, idx) => idx !== index));
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
+    }
   };
 
   return (
-    <table className="w-full border-collapse rounded-2xl overflow-hidden shadow-md bg-[#1a1a1a] text-white">
-      <thead className="bg-[#0d0d0d]">
-        <tr>
-          <th className="px-4 py-2 text-left font-semibold">Date</th>
-          <th className="px-4 py-2 text-left font-semibold">Category</th>
-          <th className="px-4 py-2 text-left font-semibold">Amount</th>
-          <th className="px-4 py-2 text-left font-semibold">Notes</th>
-          <th className="px-4 py-2 text-center font-semibold">Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((row, index) => (
-          <tr
-            key={index}
-            className="hover:bg-white/5 transition-colors duration-200"
-          >
-            <td className="px-4 py-2">
-              <input
-                type="text"
-                value={row.date}
-                onChange={(e) => handleChange(index, "date", e.target.value)}
-                className="w-full bg-[#0d0d0d] text-white border border-white/20 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </td>
-            <td className="px-4 py-2">
-              <input
-                type="text"
-                value={row.category}
-                onChange={(e) => handleChange(index, "category", e.target.value)}
-                className="w-full bg-[#0d0d0d] text-white border border-white/20 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </td>
-            <td className="px-4 py-2">
-              <input
-                type="text"
-                value={row.amount}
-                onChange={(e) => handleChange(index, "amount", e.target.value)}
-                className="w-full bg-[#0d0d0d] text-white border border-white/20 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </td>
-            <td className="px-4 py-2">
-              <input
-                type="text"
-                value={row.notes}
-                onChange={(e) => handleChange(index, "notes", e.target.value)}
-                className="w-full bg-[#0d0d0d] text-white border border-white/20 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </td>
-            <td className="px-4 py-2 text-center">
-              <button
-                onClick={() => handleDelete(index)}
-                className=" bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg shadow-md transition-colors duration-200"
-              >
-                Delete
-              </button>
-            </td>
+    <div
+      className="rounded-2xl overflow-hidden shadow-md bg-[#1a1a1a] text-white transition-all duration-500 ease-in-out"
+      style={{ width: isCollapsed ? "890px" : "750px" }}
+    >
+      <table className="w-full border-collapse">
+        <thead className="bg-[#0d0d0d]">
+          <tr>
+            <th className="px-4 py-2 text-left font-semibold">Date</th>
+            <th className="px-4 py-2 text-left font-semibold">Category</th>
+            <th className="px-4 py-2 text-left font-semibold">Amount</th>
+            <th className="px-4 py-2 text-left font-semibold">Notes</th>
+            <th className="px-4 py-2 text-center font-semibold">Delete</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {data.length > 0 ? (
+            data.map((row, index) => (
+              <tr key={row._id} className="hover:bg-white/5 transition-colors duration-200">
+                <td className="px-4 py-2">
+                  <input type="text" value={row.date} readOnly className="..." />
+                </td>
+                <td className="px-4 py-2">
+                  <input type="text" value={row.category} readOnly className="..." />
+                </td>
+                <td className="px-4 py-2">
+                  <input type="text" value={row.amount} readOnly className="..." />
+                </td>
+                <td className="px-4 py-2">
+                  <input type="text" value={row.description} readOnly className="..." />
+                </td>
+                <td className="px-4 py-2 text-center">
+                  <button onClick={() => handleDelete(index)} className="...">Delete</button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={5} className="text-center py-4 text-gray-400">
+                No transactions have been added
+              </td>
+            </tr>
+          )}
+
+          {data.length >= 6 && (
+            <tr>
+              <td colSpan={5} className="text-center py-2">
+                <button
+                  className="text-blue-500 underline hover:text-blue-700"
+                  onClick={moreTransaction}
+                >
+                  See All Transactions
+                </button>
+              </td>
+            </tr>
+          )}
+        </tbody>
+
+      </table>
+    </div>
   );
 };
 

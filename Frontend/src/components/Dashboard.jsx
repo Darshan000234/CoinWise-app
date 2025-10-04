@@ -7,7 +7,7 @@ import { home, transactions, reports, budgets, settings, logout, minus, plus } f
 import { Outlet } from 'react-router-dom';
 
 
-const URL = import.meta.env.VITE_URL || "http://localhost:3000";
+const URL = import.meta.env.VITE_URL;
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#121212] flex ">
+    <div className="bg-[#121212] flex ">
 
       {/* Collapsible Sidebar */}
       <motion.aside
@@ -123,11 +123,12 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <motion.main
+        initial={{ marginLeft: isCollapsed ? 96 : 256 }} // start at correct position
         animate={{ marginLeft: isCollapsed ? 96 : 256 }}
         className="flex-1 p-6 bg-[#121212] pr-5"
       >
         <motion.div className="bg-[#1A1A1A] rounded-3xl p-6 shadow-lg h-full w-full">
-          <Outlet />
+          <Outlet context={{isCollapsed}}/>
         </motion.div>
       </motion.main>
 

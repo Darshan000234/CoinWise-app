@@ -9,34 +9,37 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { Filler } from "chart.js";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  Filler,         // <-- add this
   Tooltip,
   Legend
 );
 
-const FinanceSummary = () => {
+
+const FinanceSummary = ({ isCollapsed }) => {
   const categoryData = [
-  { category: "Food", total: 800 },
-  { category: "Transport", total: 400 },
-  { category: "Entertainment", total: 600 },
-  { category: "Bills", total: 600 },
-  { category: "Shopping", total: 500 },
-  { category: "Healthcare", total: 300 },
-  { category: "Education", total: 450 },
-  { category: "Misc", total: 200 },
-  { category: "Travel", total: 700 },
-  { category: "Subscriptions", total: 350 },
-  { category: "Gifts", total: 250 },
-  { category: "Fitness", total: 300 },
-  { category: "Savings", total: 900 },
-  { category: "Food", total: 800 },
-  { category: "Transport", total: 400 },  
-];
+    { category: "Food", total: 800 },
+    { category: "Transport", total: 400 },
+    { category: "Entertainment", total: 600 },
+    { category: "Bills", total: 600 },
+    { category: "Shopping", total: 500 },
+    { category: "Healthcare", total: 300 },
+    { category: "Education", total: 450 },
+    { category: "Misc", total: 200 },
+    { category: "Travel", total: 700 },
+    { category: "Subscriptions", total: 350 },
+    { category: "Gifts", total: 250 },
+    { category: "Fitness", total: 300 },
+    { category: "Savings", total: 900 },
+    { category: "Food", total: 800 },
+    { category: "Transport", total: 400 },
+  ];
 
 
   const lineData = {
@@ -98,17 +101,19 @@ const FinanceSummary = () => {
   };
 
   return (
-    <div className="flex justify-center mt-10 transition-all duration-1000 ease-in-out">
-  <div className="w-[1278px] p-6 bg-[#1a1a1a] rounded-2xl shadow-2xl flex flex-col min-h-[500px]">
-    <h2 className="text-3xl font-bold text-white mb-6 text-center">
-      Category-wise Spending In This Month
-    </h2>
-    <div className="flex-1">
-      <Line data={lineData} options={options} />
+    <div className="flex justify-center mt-10">
+      <div
+        className="p-6 bg-[#1a1a1a] rounded-2xl shadow-2xl flex flex-col min-h-[500px] transition-all duration-700 ease-in-out"
+        style={{ width: isCollapsed ? "1350px" : "1250px" }}
+      >
+        <h2 className="text-3xl font-bold text-white mb-6 text-center">
+          Category-wise Spending In This Month
+        </h2>
+        <div className="flex-1">
+          <Line data={lineData} options={options} />
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-
   );
 };
 

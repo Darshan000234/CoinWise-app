@@ -5,14 +5,16 @@
 }
 
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body{
-    background-color: #121212;
-    color: white;
-    font-family: var(--font-sans);
-    transition: width 0.5s ease-in-out, margin 0.5s ease-in-out;
+  background-color: #121212;
+  color: white;
+  font-family: var(--font-sans);
+  transition: width 0.5s ease-in-out, margin 0.5s ease-in-out;
+  overflow-x: hidden;
 }
 /* Global CSS (e.g., index.css) */
 /* Global CSS (index.css or App.css) */
@@ -42,4 +44,9 @@ body{
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #2563eb;           /* darker on hover */
   transition: background-color 0.2s ease;
+}
+
+/* in your CSS file */
+.custom-date::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }

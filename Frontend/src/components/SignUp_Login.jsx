@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const URL = import.meta.env.VITE_URL || "http://localhost:3000";
+const URL = import.meta.env.VITE_URL;
 
 const SignUp_Login = () => {
   const [Check, setCheck] = useState(1);
