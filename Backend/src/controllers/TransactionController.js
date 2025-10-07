@@ -58,3 +58,23 @@ export const TransactionEdit = async (req, res) => {
     res.status(500).json({ error: "Failed to Update transactions" });
   }
 }
+
+export const CategoryTransaction = async (req, res) => {
+  const id = req.user.id;
+  try {
+    const data = await Transaction.aggregate([
+      { $match: { user_id: id } },
+      {
+        $group: {
+          _id: { $toLower: "$category" },   // normalize case
+          totalAmount: { $sum: "$amount" },
+          transactions: { $push: "$$ROOT" }
+        }
+      }
+    ]);
+
+    res.status(200).json({ data });
+  } catch (error) {
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};

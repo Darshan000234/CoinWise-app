@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./models/db');
 const UserRoutes = require('./routes/UserRoute');
 const TransactionRoutes = require('./routes/TransactionRoute');
+const BudgetRoutes = require('./routes/BudgetRoutes');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -24,5 +25,6 @@ app.get('/', (req, res) => {
 
 app.use('/user', UserRoutes);
 app.use('/transaction',TransactionRoutes);
+app.use('/budget',BudgetRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

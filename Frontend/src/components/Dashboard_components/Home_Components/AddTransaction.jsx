@@ -99,15 +99,24 @@ const AddTransaction = () => {
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Amount
           </label>
-          <input
-            type="number"
-            name="amount"
-            value={form.amount}
-            onChange={handleChange}
-            placeholder="Enter amount"
-            className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              $
+            </span>
+            <input
+              type="text"
+              name="amount"
+              value={form.amount}
+              onChange={(e) => {
+                // Only allow numbers
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setForm({ ...form, amount: value });
+              }}
+              placeholder="Enter amount"
+              className="w-full pl-7 pr-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
         </div>
 
         {/* Category Dropdown */}
