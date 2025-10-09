@@ -1,6 +1,21 @@
 import Transaction from '../models/Transaction.js'
-
+import Tesseract from "tesseract.js";
+import fs from "fs";
+import path from "path";
+import Poppler  from "pdf-poppler";
+import os from "os";
+import { v4 as uuidv4 } from 'uuid';
+import sharp from "sharp";
+ 
 // send data 
+async function preprocessImage(buffer) {
+  // Convert to grayscale, normalize contrast, resize if needed
+  return await sharp(buffer)
+    .grayscale()        // convert to grayscale
+    .normalize()        // improve contrast
+    .toBuffer();
+}
+
 export const TransactionData = async (req, res) => {
   const id = req.user.id;
   const limit = parseInt(req.query.limit) || 0;
@@ -76,5 +91,75 @@ export const CategoryTransaction = async (req, res) => {
     res.status(200).json({ data });
   } catch (error) {
     res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+async function extractTextFromBuffer(buffer, mimetype) {
+  try {
+    if (mimetype === "application/pdf") {
+      const uniqueId = uuidv4();
+      const tempPdfPath = path.join(os.tmpdir(), `temp_${uniqueId}.pdf`);
+      fs.writeFileSync(tempPdfPath, buffer);
+
+      const opts = {
+        format: "png",
+        out_dir: os.tmpdir(),
+        out_prefix: `page_${uniqueId}`,
+        page: null
+      };
+      await Poppler.convert(tempPdfPath, opts);
+
+      const images = fs.readdirSync(os.tmpdir())
+        .filter(f => f.startsWith(`page_${uniqueId}`) && f.endsWith(".png"))
+        .map(f => path.join(os.tmpdir(), f));
+
+      let combinedText = "";
+      for (let imgPath of images) {
+        const imageBuffer = fs.readFileSync(imgPath);
+        const preprocessedBuffer = await preprocessImage(imageBuffer);
+
+        const { data: { text } } = await Tesseract.recognize(preprocessedBuffer, "eng", { 
+          logger: () => {} 
+        });
+
+        combinedText += text + "\n";
+        fs.unlinkSync(imgPath); // cleanup
+      }
+      fs.unlinkSync(tempPdfPath); // cleanup PDF
+      return combinedText;
+    } else if (mimetype.startsWith("image/")) {
+      const preprocessedBuffer = await preprocessImage(buffer);
+      const { data: { text } } = await Tesseract.recognize(preprocessedBuffer, "eng", { 
+        logger: () => {} 
+      });
+      return text;
+    } else {
+      throw new Error("Unsupported file type");
+    }
+  } catch (err) {
+    console.error("OCR Error:", err);
+    return null;
+  }
+}
+
+async function sendTextToGemini(text) {
+  // Replace this with your actual Gemini API logic
+  console.log("Sending to Gemini:", text);
+  return { status: "success"};
+}
+
+export const FileTransaction = async (req, res) => {
+  try {
+    const buffer = req.file.buffer;
+    const mimetype = req.file.mimetype;
+    const text = await extractTextFromBuffer(buffer,mimetype);
+    if (!text) {
+      return res.status(400).json({ error: "No text found in file" });
+    }
+    const geminiResult = await sendTextToGemini(text);
+    res.json({ message: "Processed successfully"});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
