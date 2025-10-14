@@ -1,20 +1,11 @@
 import Transaction from '../models/Transaction.js'
-import Tesseract from "tesseract.js";
-import fs from "fs";
-import path from "path";
-import Poppler  from "pdf-poppler";
-import os from "os";
-import { v4 as uuidv4 } from 'uuid';
-import sharp from "sharp";
  
-// send data 
-async function preprocessImage(buffer) {
-  // Convert to grayscale, normalize contrast, resize if needed
-  return await sharp(buffer)
-    .grayscale()        // convert to grayscale
-    .normalize()        // improve contrast
-    .toBuffer();
-}
+const {
+  VERYFI_CLIENT_ID,
+  VERYFI_USERNAME,
+  VERYFI_API_KEY,
+  HUGGINGFACE_API_KEY,
+} = process.env;
 
 export const TransactionData = async (req, res) => {
   const id = req.user.id;
@@ -94,69 +85,110 @@ export const CategoryTransaction = async (req, res) => {
   }
 };
 
-async function extractTextFromBuffer(buffer, mimetype) {
+export async function extractReceiptData(fileBuffer) {
+  const imageData = fileBuffer.toString("base64");
+
   try {
-    if (mimetype === "application/pdf") {
-      const uniqueId = uuidv4();
-      const tempPdfPath = path.join(os.tmpdir(), `temp_${uniqueId}.pdf`);
-      fs.writeFileSync(tempPdfPath, buffer);
-
-      const opts = {
-        format: "png",
-        out_dir: os.tmpdir(),
-        out_prefix: `page_${uniqueId}`,
-        page: null
-      };
-      await Poppler.convert(tempPdfPath, opts);
-
-      const images = fs.readdirSync(os.tmpdir())
-        .filter(f => f.startsWith(`page_${uniqueId}`) && f.endsWith(".png"))
-        .map(f => path.join(os.tmpdir(), f));
-
-      let combinedText = "";
-      for (let imgPath of images) {
-        const imageBuffer = fs.readFileSync(imgPath);
-        const preprocessedBuffer = await preprocessImage(imageBuffer);
-
-        const { data: { text } } = await Tesseract.recognize(preprocessedBuffer, "eng", { 
-          logger: () => {} 
-        });
-
-        combinedText += text + "\n";
-        fs.unlinkSync(imgPath); // cleanup
+    const response = await axios.post(
+      "https://api.veryfi.com/api/v8/partner/documents/",
+      { file_data: imageData },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "CLIENT-ID": VERYFI_CLIENT_ID,
+          "AUTHORIZATION": `apikey ${VERYFI_USERNAME}:${VERYFI_API_KEY}`,
+        },
       }
-      fs.unlinkSync(tempPdfPath); // cleanup PDF
-      return combinedText;
-    } else if (mimetype.startsWith("image/")) {
-      const preprocessedBuffer = await preprocessImage(buffer);
-      const { data: { text } } = await Tesseract.recognize(preprocessedBuffer, "eng", { 
-        logger: () => {} 
-      });
-      return text;
-    } else {
-      throw new Error("Unsupported file type");
-    }
-  } catch (err) {
-    console.error("OCR Error:", err);
-    return null;
+    );
+
+    const data = response.data;
+
+    console.log("✅ OCR Extracted Data from Veryfi:");
+    console.log(JSON.stringify(data, null, 2));
+
+    const items = data.line_items || [];
+    const totalAmount = data.total || 0;
+
+    // Pass extracted item descriptions to category prediction
+    const categorizedItems = await Promise.all(
+      items.map(async (item) => {
+        const category = await predictCategory(item.description || "");
+        return {
+          description: item.description || "Unknown",
+          amount: item.total || 0,
+          category: category || "Other",
+        };
+      })
+    );
+
+    const result = {
+      totalAmount,
+      items: categorizedItems,
+    };
+
+    console.log("✅ Final Structured Result:");
+    console.log(JSON.stringify(result, null, 2));
+
+    return result;
+  } catch (error) {
+    console.error("❌ OCR Error:", error.response?.data || error.message);
+    throw error;
   }
 }
 
-async function sendTextToGemini(text) {
-  // Replace this with your actual Gemini API logic
-  console.log("Sending to Gemini:", text);
-  return { status: "success"};
+async function predictCategory(text) {
+  if (!text) return "Other";
+
+  try {
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
+      {
+        inputs: text,
+        parameters: {
+          candidate_labels: [
+            "Food",
+            "Shopping",
+            "Transport",
+            "Rent",
+            "Entertainment",
+            "Health",
+            "Education",
+            "Investment",
+            "Others",
+          ],
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${HUGGINGFACE_API_KEY}`,
+        },
+      }
+    );
+
+    const bestLabel = response.data.labels[0];
+    return bestLabel;
+  } catch (err) {
+    console.error("❌ AI Category Error:", err.response?.data || err.message);
+    return "Other";
+  }
 }
 
 export const FileTransaction = async (req, res) => {
   try {
     const buffer = req.file.buffer;
-    const mimetype = req.file.mimetype;
-    const text = await extractTextFromBuffer(buffer,mimetype);
+    const result = await extractReceiptData(buffer);
+    const transactions = result.items.map((item) => ({
+      user_id: req.user.id, // make sure req.user is populated via auth middleware
+      amount: item.amount, 
+      type: "expense", // receipts usually represent expenses
+      category: item.category,
+      description: item.description,
+      date: new Date(),
+    }));
+    await Transaction.insertMany(transactions);
     if (!text) {
       return res.status(400).json({ error: "No text found in file" });
     }
-    const geminiResult = await sendTextToGemini(text);
     res.json({ message: "Processed successfully"});
   } catch (err) {
     console.error(err);

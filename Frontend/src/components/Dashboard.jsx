@@ -85,11 +85,11 @@ const Dashboard = () => {
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
-                <Link key={item.name} to={item.path} className="w-full">
+                <Link key={item.name} to={item.path} className={`${isCollapsed ? 'w-full' : 'ml-4 w-[200px]'}`}>
                   <motion.div
                     className={`flex items-center gap-4 p-3 rounded-xl font-medium text-white transition-all duration-300
                 ${isActive ? 'bg-[#333]' : 'hover:bg-[#333]'}`}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.06 }}
                   >
                     <img
                       src={item.icon}

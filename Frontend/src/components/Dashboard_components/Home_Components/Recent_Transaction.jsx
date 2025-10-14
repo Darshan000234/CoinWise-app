@@ -61,7 +61,9 @@ const Recent_Transaction = ({ isCollapsed }) => {
                   <input type="text" value={row.amount} readOnly className="..." />
                 </td>
                 <td className="px-4 py-2">
-                  <input type="text" value={row.description} readOnly className="..." />
+                  <div className="text-gray-400 break-words">
+                    {row.description || "-"}
+                  </div>
                 </td>
                 <td className="px-4 py-2 text-center">
                   <button onClick={() => handleDelete(index)} className="...">Delete</button>
