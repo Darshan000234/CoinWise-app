@@ -1,27 +1,40 @@
 import React, { useEffect, useState } from "react";
 import Pagination from "@mui/material/Pagination";
+import Transaction from "./Home_Components/AddTransaction";
+import transaction from "./Home_Components/Transaction"
+import { Dialog } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { Delete,Edit } from "lucide-react";
 
 const URL = import.meta.env.VITE_URL;
 const Dashboard_Transaction = () => {
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState([{
+      _id: "1",
+      date: "2025-10-12",
+      type : "expense",
+      category: "Food",
+      amount: 450.75,
+      description: "Dinner at restaurant",
+    }]);
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState("desc");
   const [page, setPage] = useState(1);
+  const [popup, setPopup] = useState(null); // stores selected transaction
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // controls popup visibility
   const itemsPerPage = 12;
 
   useEffect(() => {
     const getData = async () => {
       try {
         const res = await axios.get(`${URL}/transaction`,{withCredentials : true});
-        setTransactions(res.data.data || []);
+        // setTransactions(res.data.data || []);
       } catch (err) {
         toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
       }
     }
     getData();
-    const interval = setInterval(getData,5000);
+    const interval = setInterval(getData,3000);
     return () => clearInterval(interval);
   }, [])
   
@@ -64,6 +77,24 @@ const Dashboard_Transaction = () => {
     console.log(value);
   };
 
+  const EditData = (txn) => {
+    setPopup(txn);           // store transaction data
+    setIsPopupOpen(true);    // open dialog
+  };
+
+  const handleClose = () => {
+    setPopup(null);
+    setIsPopupOpen(false);
+  };
+  const DeleteData = async (txn) => {
+    try {
+      const id = txn._id;
+      const res = await axios.post(`${URL}/transaction/delete`,id,{withCredentials : true});
+      toast.success(res.data.message);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
+    }
+  }
   return (
     <div className="p-6 text-white min-h-screen flex flex-col items-center bg-[#262626] rounded-3xl">
       <h2 className="text-3xl font-semibold mb-8 text-center">
@@ -95,9 +126,11 @@ const Dashboard_Transaction = () => {
               <th className="px-4 py-3 text-left font-semibold">Category</th>
               <th className="px-4 py-3 text-left font-semibold">Notes</th>
               <th className="px-4 py-3 text-left font-semibold">Type</th>
-              <th data-value="amount" className="px-4 py-3 text-right font-semibold cursor-pointer select-none" onClick={(e) => toggleSort(e.target.dataset.value)}>
+              <th data-value="amount" className="px-4 py-3 text-left font-semibold cursor-pointer select-none" onClick={(e) => toggleSort(e.target.dataset.value)}>
                 Amount {order === "Aasc" ? "↑" : "↓"}
               </th>
+              <th className="px-4 py-3 text-left font-semibold">Edit</th>
+              <th className="px-4 py-3 text-left font-semibold">Delete</th>
             </tr>
           </thead>
           <tbody>
@@ -107,10 +140,10 @@ const Dashboard_Transaction = () => {
                   key={txn._id}
                   className="hover:bg-white/5 transition-colors duration-200"
                 >
-                  <td className="px-4 py-3  border-gray-800">
+                  <td className="px-4 py-3  ">
                     {new Date(txn.date).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 border-gray-800">
+                  <td className="px-4 py-3 ">
                     <input
                       type="text"
                       readOnly
@@ -118,33 +151,39 @@ const Dashboard_Transaction = () => {
                       className="bg-transparent w-full outline-none text-gray-200"
                     />
                   </td>
-                  <td className="px-4 py-3 border-gray-800">
+                  <td className="px-4 py-3">
                     <input
                       type="text"
                       readOnly
                       value={txn.description || "-"}
-                      className="bg-transparent w-full outline-none text-gray-400"
+                      className="bg-transparent w-full outline-none text-gray-400 break-words"
                     />
                   </td>
                   <td
-                    className={`px-4 py-3 border-gray-800 font-semibold ${
+                    className={`px-4 py-3 font-semibold ${
                       txn.type === "expense" ? "text-red-400" : "text-green-400"
                     }`}
                   >
-                    {(txn.type.charAt(0).toLocaleUpperCase() + txn.type.slice(1))}
+                    {txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
                   </td>
-                  <td className="px-4 py-3  border-gray-800 text-right font-medium text-gray-100">
+                  <td className="px-4 py-3  text-left font-medium text-gray-100">
                     ${txn.amount.toLocaleString("en-IN", {
                       minimumFractionDigits: 2,
                     })}
+                  </td>
+                  <td className="px-4 py-3  text-left font-medium text-gray-100 cursor-pointer" onClick={() => EditData(txn)}>
+                    Edit <Edit className="inline w-5 h-5 cursor-pointer ml-[2px]" />
+                  </td>
+                  <td className="px-4 py-3  text-left font-medium text-gray-100 cursor-pointer" onClick={() => DeleteData(txn)}>
+                    Delete <Delete className="inline w-5 h-5 cursor-pointer ml-[2px]" />
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td
-                  colSpan={5}
-                  className="text-center py-6 text-gray-400 border-t border-gray-800"
+                  colSpan={7}
+                  className="text-center py-6 text-gray-400 "
                 >
                   No transactions found
                 </td>
@@ -176,6 +215,17 @@ const Dashboard_Transaction = () => {
           />
         </div>
       )}
+      <Dialog
+        open={isPopupOpen}
+        onClose={handleClose}
+      >
+        {popup && (
+          <Transaction
+            txn={popup}        // pass selected transaction as prop
+            onClose={handleClose}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };

@@ -1,18 +1,26 @@
 import axios from "axios";
 import React, { useState, useRef, useEffect } from "react";
+import toast from "react-hot-toast";
 
 
 const URL = import.meta.env.VITE_URL;
-const AddTransaction = () => {
-  const [form, setForm] = useState({
+const AddTransaction = ({txn,onClose}) => {
+  const [form, setForm] = useState((txn === undefined) ? {
+    _id:"",
     date: "",
     amount: "",
     category: "",
     type: "",
     notes: ""
+  }:{
+    _id:txn._id,
+    date: new Date(txn.date).toISOString().split('T')[0],
+    amount: txn.amount.toLocaleString("en-IN", {minimumFractionDigits: 2,}),
+    category: txn.category,
+    type: txn.type.toLowerCase(),
+    notes: txn.description || '-'
   });
-
-
+  const [value,setValue] = useState((txn === undefined ? '':"Update"));
   const [customCategory, setCustomCategory] = useState(""); // NEW state
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -60,10 +68,11 @@ const AddTransaction = () => {
       category: finalCategory,
       date: (!form.date || form.date === "01/01/0001") ? "" : form.date
     };
+    const destination = value.toLowerCase() === "update" ? "update" : "add";
     try {
-      const res = await axios.post(`${URL}/transaction/add`, transactionPayload, { withCredentials: true });
+      const res = await axios.post(`${URL}/transaction/${destination}`, transactionPayload, { withCredentials: true });
       toast.success(res.data.message);
-      setForm({ amount: "", category: "", type: "", notes: "", date: "" });
+      setForm({ _id:"", amount: "", category: "", type: "", notes: "", date: "" });
       setCustomCategory("");
     } catch (err) {
       toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
@@ -81,7 +90,7 @@ const AddTransaction = () => {
   }, []);
 
   return (
-    <div className="w-[450px] h-auto p-6 bg-[#1a1a1a] rounded-2xl shadow-md">
+    <div className="w-[450px] h-auto p-6 bg-[#1a1a1a] rounded-2xl shadow-md m-0">
       <h2 className="text-xl font-semibold mb-5 text-white">Add Transaction</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,7 +118,7 @@ const AddTransaction = () => {
               value={form.amount}
               onChange={(e) => {
                 // Only allow numbers
-                const value = e.target.value.replace(/[^0-9]/g, '');
+                const value = e.target.value.replace(/[^0-9.]/g, '');
                 setForm({ ...form, amount: value });
               }}
               placeholder="Enter amount"
@@ -226,7 +235,7 @@ const AddTransaction = () => {
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition text-lg"
         >
-          Add Transaction
+          {value === "" ? "Add Transaction" : "Update Transaction"}
         </button>
       </form>
     </div>
