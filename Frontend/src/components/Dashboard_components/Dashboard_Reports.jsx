@@ -2,7 +2,7 @@ import React from 'react'
 
 const Dashboard_Reports = () => {
   return (
-    <div>dashboard_reports</div>
+    <div className='p-6 min-h-screen bg-[#262626] rounded-3xl'></div>
   )
 }
 

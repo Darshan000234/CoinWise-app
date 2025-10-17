@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Pagination from "@mui/material/Pagination";
 import Transaction from "./Home_Components/AddTransaction";
-import transaction from "./Home_Components/Transaction"
+// import transaction from "./Home_Components/Transaction"
+import { motion, AnimatePresence } from "framer-motion";
 import { Dialog } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -96,7 +97,7 @@ const Dashboard_Transaction = () => {
     }
   }
   return (
-    <div className="p-6 text-white min-h-screen flex flex-col items-center bg-[#262626] rounded-3xl">
+    <div className="p-6 text-white min-h-screen flex flex-col items-center bg-[#262626] rounded-3xl transition-all duration-[0.7s] ease-in">
       <h2 className="text-3xl font-semibold mb-8 text-center">
         💰 All Transactions
       </h2>
@@ -215,17 +216,41 @@ const Dashboard_Transaction = () => {
           />
         </div>
       )}
-      <Dialog
-        open={isPopupOpen}
-        onClose={handleClose}
-      >
-        {popup && (
-          <Transaction
-            txn={popup}        // pass selected transaction as prop
+      {/* Popup Animation */}
+      <AnimatePresence>
+        {isPopupOpen && (
+          <Dialog
+            open={isPopupOpen}
             onClose={handleClose}
-          />
+            disableScrollLock={true}
+            PaperProps={{
+              sx: {
+                backgroundColor: "transparent",
+                boxShadow: "none",
+              },
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: -30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{
+                duration: 0.3,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+              className="flex justify-center items-center"
+            >
+              {popup && (
+                <Transaction
+                  txn={popup}
+                  onClose={handleClose}
+                />
+              )}
+            </motion.div>
+          </Dialog>
         )}
-      </Dialog>
+      </AnimatePresence>
+
     </div>
   );
 };

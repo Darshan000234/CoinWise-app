@@ -43,7 +43,7 @@ const Dashboard = () => {
   const menuItems = [
     { name: 'Home', icon: home, path: '/dashboard' },
     { name: 'Transactions', icon: transactions, path: '/dashboard/transactions' },
-    { name: 'Reports', icon: reports, path: '/dashboard/reports' },
+    { name: 'Reports & Exports', icon: reports, path: '/dashboard/reports' },
     { name: 'Budgets', icon: budgets, path: '/dashboard/budgets' },
     { name: 'Settings', icon: settings, path: '/dashboard/settings' },
   ];
