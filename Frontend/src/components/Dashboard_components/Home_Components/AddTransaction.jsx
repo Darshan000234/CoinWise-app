@@ -91,7 +91,9 @@ const AddTransaction = ({txn,onClose}) => {
 
   return (
     <div className="w-[450px] h-auto p-6 bg-[#1a1a1a] rounded-2xl shadow-md m-0">
-      <h2 className="text-xl font-semibold mb-5 text-white">Add Transaction</h2>
+      <h2 className="text-xl font-semibold mb-5 text-white">
+        {txn == undefined ? 'Add Transaction' : 'Update Transaction'}
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Date */}

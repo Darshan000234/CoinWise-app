@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 import { generateToken } from '../utils/JWT.js';
 import axios from 'axios';
+import Transaction from '../models/Transaction.js';
 
 // Sign Up
 export const signUp = async (req, res) => {
@@ -70,11 +71,8 @@ export const login = async (req, res) => {
 
 // Google Authentication
 export const googleAuth = async (req, res) => {
-    console.log('hi');
-
     try {
         const { token } = req.body; // token from frontend
-
         if (!token) {
             return res.status(400).json({ message: 'Google token is required' });
         }
@@ -82,11 +80,7 @@ export const googleAuth = async (req, res) => {
             `https://www.googleapis.com/oauth2/v3/userinfo`,
             { headers: { Authorization: `Bearer ${token}` } }
         );
-        // console.log(data);
-
         const { sub, email, name, picture } = data;
-
-        // Check if user exists
         let user = await User.findOne({ email }), message = 'Login Successful';
         if (!user) {
             user = await User.create({
@@ -126,3 +120,56 @@ export const logout = async (req, res) => {
         return res.status(500).json({ message: 'Logout failed', error: err.message });
     }
 };
+
+
+// userData 
+export const Data = async (req,res) => {
+    const id = req.user.id;
+    try {
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+        let data = {
+        monthly_income: "0",
+        Expenses: "0",
+        Net_Saving: "0",
+        Average: "0",
+        Highest: "0"
+        };
+        const UserData = await User.findOne({ _id: id });
+        const GetData = await Transaction.find({
+            user_id: id,
+            date: { $gte: startOfMonth, $lte: endOfMonth }
+        });
+        const baseIncome = UserData.monthly_income ?? 0;
+        data.monthly_income = baseIncome; 
+        if (!GetData || GetData.length === 0) {
+            data.Net_Saving = baseIncome > 0 ? baseIncome.toFixed(2) : "0";
+            return res.status(200).json(data);
+        }
+        const incomeTransactions = GetData.filter(t => t.type === "income");
+        const expenseTransactions = GetData.filter(t => t.type === "expense");
+        const totalIncomeTx = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
+        const totalExpenses = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+        data.Expenses =totalExpenses.toFixed(2);     
+        const totalMonthlyIncome = baseIncome + totalIncomeTx;
+        data.monthly_income =totalMonthlyIncome.toFixed(2);
+        data.Average = expenseTransactions.length > 0
+        ? ((totalExpenses / expenseTransactions.length).toFixed(2))
+        : "0";
+
+        const categoryTotals = {};
+        expenseTransactions.forEach(t => {
+            categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+        });
+        data.Highest =
+        Object.keys(categoryTotals).length > 0
+            ? (Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0][0])
+            : "0";
+
+        data.Net_Saving = (totalMonthlyIncome - totalExpenses).toFixed(2);
+        return res.status(200).json(data);
+    } catch (error) {
+        return res.status(500).json({ message: 'Logout failed', error: err.message });        
+    }
+}

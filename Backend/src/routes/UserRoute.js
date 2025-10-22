@@ -12,5 +12,6 @@ router.get('/validate-session', isloggedIn.authMiddleware, (req, res) => {
     user: req.user
   });
 });
-router.get('/logout',isloggedIn.authMiddleware,UserController.logout)
+router.get('/getdata',isloggedIn.authMiddleware,UserController.Data);
+router.get('/logout',isloggedIn.authMiddleware,UserController.logout);
 module.exports = router;
