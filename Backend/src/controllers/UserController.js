@@ -123,53 +123,60 @@ export const logout = async (req, res) => {
 
 
 // userData 
-export const Data = async (req,res) => {
+export const Data = async (req, res) => {
+  try {
     const id = req.user.id;
-    try {
-        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+    const { prev } = req.query;
 
-        let data = {
-        monthly_income: "0",
-        Expenses: "0",
-        Net_Saving: "0",
-        Average: "0",
-        Highest: "0"
-        };
-        const UserData = await User.findOne({ _id: id });
-        const GetData = await Transaction.find({
-            user_id: id,
-            date: { $gte: startOfMonth, $lte: endOfMonth }
-        });
-        const baseIncome = UserData.monthly_income ?? 0;
-        data.monthly_income = baseIncome; 
-        if (!GetData || GetData.length === 0) {
-            data.Net_Saving = baseIncome > 0 ? baseIncome.toFixed(2) : "0";
-            return res.status(200).json(data);
-        }
-        const incomeTransactions = GetData.filter(t => t.type === "income");
-        const expenseTransactions = GetData.filter(t => t.type === "expense");
-        const totalIncomeTx = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
-        const totalExpenses = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
-        data.Expenses =totalExpenses.toFixed(2);     
-        const totalMonthlyIncome = baseIncome + totalIncomeTx;
-        data.monthly_income =totalMonthlyIncome.toFixed(2);
-        data.Average = expenseTransactions.length > 0
-        ? ((totalExpenses / expenseTransactions.length).toFixed(2))
-        : "0";
+    const currentDate = new Date();
+    const monthOffset = prev !== undefined ? 1 : 0;
 
-        const categoryTotals = {};
-        expenseTransactions.forEach(t => {
-            categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
-        });
-        data.Highest =
-        Object.keys(categoryTotals).length > 0
-            ? (Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0][0])
-            : "0";
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - monthOffset, 1);
+    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - monthOffset + 1, 0);
 
-        data.Net_Saving = (totalMonthlyIncome - totalExpenses).toFixed(2);
-        return res.status(200).json(data);
-    } catch (error) {
-        return res.status(500).json({ message: 'Logout failed', error: err.message });        
-    }
-}
+    const user = await User.findById(id);
+    const baseIncome = user?.monthly_income ?? 0;
+
+    const transactions = await Transaction.find({
+      user_id: id,
+      date: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    let data = {
+      user_id : id,
+      monthly_income: baseIncome.toFixed(2),
+      Expenses: "0",
+      Net_Saving: baseIncome.toFixed(2),
+      Average: "0",
+      Highest: "0",
+    };
+
+    if (transactions.length === 0) return res.status(200).json(data);
+
+    const incomeTx = transactions.filter(t => t.type === "income");
+    const expenseTx = transactions.filter(t => t.type === "expense");
+
+    const totalIncome = baseIncome + incomeTx.reduce((s, t) => s + t.amount, 0);
+    const totalExpense = expenseTx.reduce((s, t) => s + t.amount, 0);
+
+    const categoryTotals = {};
+    expenseTx.forEach(t => {
+      categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+    });
+
+    const highestCategory =
+      Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "0";
+
+    data = {
+      monthly_income: totalIncome.toFixed(2),
+      Expenses: totalExpense.toFixed(2),
+      Net_Saving: (totalIncome - totalExpense).toFixed(2),
+      Average: expenseTx.length ? (totalExpense / expenseTx.length).toFixed(2) : "0",
+      Highest: highestCategory,
+    };
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch data", error: error.message });
+  }
+};

@@ -66,10 +66,12 @@ export const TransactionEdit = async (req, res) => {
 }
 
 export const CategoryTransaction = async (req, res) => {
-  const id = req.user.id;
+  const matchStage  = {user_id : req.user.id};
+  const {start,end} = req.query;
   try {
+    if(start && end) matchStage.date = { $gte : start , $lte : end };
     const data = await Transaction.aggregate([
-      { $match: { user_id: id } },
+      { $match: matchStage  },
       {
         $group: {
           _id: { $toLower: "$category" },   // normalize case

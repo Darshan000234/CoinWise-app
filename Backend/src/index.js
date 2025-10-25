@@ -7,6 +7,8 @@ const TransactionRoutes = require('./routes/TransactionRoute');
 const BudgetRoutes = require('./routes/BudgetRoutes');
 const cookieParser = require('cookie-parser');
 const ReportRoute = require('./routes/ReportRoute');
+const { startReportCron } = require('./jobs/reportCron');
+startReportCron();
 const app = express();
 dotenv.config();
 connectDB();

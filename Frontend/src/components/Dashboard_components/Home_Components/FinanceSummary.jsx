@@ -42,7 +42,6 @@ const FinanceSummary = ({ isCollapsed, userId }) => {
 
     fetchCategoryData();
     const interval = setInterval(fetchCategoryData, 5000);
-
     return () => {
       isMounted = false;
       clearInterval(interval);
