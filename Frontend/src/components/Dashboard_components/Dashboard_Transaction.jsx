@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Pagination from "@mui/material/Pagination";
 import Transaction from "./Home_Components/AddTransaction";
-// import transaction from "./Home_Components/Transaction"
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog } from "@mui/material";
 import axios from "axios";

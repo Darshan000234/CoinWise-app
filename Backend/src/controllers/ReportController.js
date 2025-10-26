@@ -52,7 +52,7 @@ export const bar = async (req, res) => {
     const data = await Transaction.find(filter);
 
     if (!data || data.length === 0) {
-      return res.status(404).json({ message: "No transactions found for the selected range." });
+      return res.status(200).json({ message: "No transactions found for the selected range." });
     }
 
     const userData = await User.findById(id);
@@ -77,13 +77,19 @@ export const pie = async (req, res) => {
     if (!start || !end) {
       return res.status(200).json({ categoryData: [] });
     }
-    const result = await axios.get(
-      `${URL}/transaction/category?start=${start?.toISOString() || ""}&end=${end?.toISOString() || ""}`,
-      { withCredentials: true }
-    );
+    let result;
+    try {
+      result = await axios.get(
+        `${URL}/transaction/category?start=${start.toISOString()}&end=${end.toISOString()}`,
+        { withCredentials: true }
+      );
+    } catch (innerErr) {
+      console.log("Error from /transaction/category:", innerErr.message);
+      return res.status(200).json({ categoryData: [] });
+    }
 
     if (!result.data?.data || result.data.data.length === 0) {
-      return res.status(404).json({ message: "No category data found for the selected range." });
+      return res.status(200).json({ message: "No category data found for the selected range." });
     }
 
     res.status(200).json({ categoryData: result.data.data });
@@ -96,7 +102,7 @@ export const pie = async (req, res) => {
 export const line = async (req, res) => {
   const id = req.user.id;
   const { type, range } = req.query;
-
+  console.log(id);
   try {
     const { start, end } = getDateRange(type, range);
     if (!start || !end) {
@@ -108,7 +114,7 @@ export const line = async (req, res) => {
     const transactions = await Transaction.find(filter);
 
     if (!transactions || transactions.length === 0) {
-      return res.status(404).json({ message: "No transactions found for the selected range." });
+      return res.status(200).json({ message: "No transactions found for the selected range." });
     }
 
     const dailySpend = {};

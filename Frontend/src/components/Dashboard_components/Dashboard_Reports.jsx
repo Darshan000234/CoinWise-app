@@ -23,10 +23,12 @@ const Dashboard_Reports = () => {
           withCredentials: true,
         });
         setReportData(reportRes.data);
-        reportData.current.totalIncome =  userRes.data.monthly_income;
-        reportData.current.totalSpend =  userRes.data.Expenses;
-        reportData.current.netSaving = userRes.data.Net_Saving;
-      } catch (err) {
+        if(reportData?.current && userRes?.data){
+          reportData.current.totalIncome =  userRes.data.monthly_income;
+          reportData.current.totalSpend =  userRes.data.Expenses;
+          reportData.current.netSaving = userRes.data.Net_Saving;
+        }
+        } catch (err) {
         toast.error(err?.response?.data?.message || err.message, {
           duration: 3000,
         });

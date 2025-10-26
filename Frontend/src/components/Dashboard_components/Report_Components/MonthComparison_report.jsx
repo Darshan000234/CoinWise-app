@@ -9,7 +9,8 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-
+import CustomLineTooltip from "./Customelinetool";
+import CustomTooltip from "./Custometool.jsx";
 const MonthComparisonReport = ({ currentMonthData, previousMonthData }) => {
   // Default mock data for current and previous months
   const defaultCurrent = [
@@ -52,11 +53,12 @@ const MonthComparisonReport = ({ currentMonthData, previousMonthData }) => {
           <XAxis dataKey="category" tick={{ fill: "#ccc", fontSize: 14 }} />
           <YAxis tick={{ fill: "#ccc", fontSize: 14 }} />
           <Tooltip
-            contentStyle={{ backgroundColor: "#2a2a2a", borderRadius: 6, border: "none", color: "#fff" }}
+            content={<CustomLineTooltip/>}
+            wrapperStyle={{ backgroundColor: "transparent", border: "none" }}
           />
           <Legend wrapperStyle={{ color: "#fff" }} />
-          <Bar dataKey="Current" fill="#4f9cff" radius={[6, 6, 0, 0]} />
-          <Bar dataKey="Previous" fill="#ff6b6b" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="Current" fill="#4f9cff" radius={[6, 6, 0, 0]} activeBar={false}/>
+          <Bar dataKey="Previous" fill="#ff6b6b" radius={[6, 6, 0, 0]} activeBar={false}/>
         </BarChart>
       </ResponsiveContainer>
     </div>

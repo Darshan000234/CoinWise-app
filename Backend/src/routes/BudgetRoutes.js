@@ -5,4 +5,4 @@ const isloggedIn = require('../middlewares/isloggedIn');
 
 router.get('/data',isloggedIn.authMiddleware,BudgetController.BudgetData);
 
-module.exports = router;
+module.exports = router; 
