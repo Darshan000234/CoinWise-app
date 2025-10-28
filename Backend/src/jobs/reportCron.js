@@ -26,7 +26,6 @@ export const startReportCron = () => {
       if (!report) continue;
 
       const pdfPath = await generatePdfWithPuppeteer(report);
-
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: user.email,

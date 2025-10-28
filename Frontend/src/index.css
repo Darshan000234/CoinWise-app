@@ -7,7 +7,6 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
-  
 }
 
 body{
@@ -67,3 +66,5 @@ body{
 .animate-modalOpen {
   animation: modalOpen 0.25s ease-out;
 }
+
+

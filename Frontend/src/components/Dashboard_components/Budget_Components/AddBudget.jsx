@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
-
 const URL = import.meta.env.VITE_URL;
 
 const AddBudget = ({ budget, onClose }) => {

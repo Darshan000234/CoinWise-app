@@ -1,89 +1,67 @@
 import React, { useEffect, useState } from "react";
-import Pagination from "@mui/material/Pagination";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, LinearProgress } from "@mui/material";
+import { Dialog, LinearProgress, Pagination } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Delete, Edit } from "lucide-react";
+import { Edit, Delete } from "lucide-react";
 import AddBudget from "./AddBudget";
 
 const URL = import.meta.env.VITE_URL;
 
 const AllBudget = () => {
   const [budgets, setBudgets] = useState([
-  { category: "Food", limit: 5000, spent: 4200, month: "October 2025" },
-  { category: "Transport", limit: 2000, spent: 1800, month: "October 2025" },
-  { category: "Shopping", limit: 3000, spent: 2500, month: "October 2025" },
-  { category: "Entertainment", limit: 2500, spent: 1900, month: "October 2025" },
-  { category: "Health", limit: 4000, spent: 1500, month: "October 2025" },
-  { category: "Education", limit: 3500, spent: 3400, month: "October 2025" }
-]
-);
+    { category: "Food", limit: 5000, spent: 4200, month: "October 2025" },
+    { category: "Transport", limit: 2000, spent: 1800, month: "October 2025" },
+    { category: "Shopping", limit: 3000, spent: 2500, month: "October 2025" },
+    { category: "Entertainment", limit: 2500, spent: 1900, month: "October 2025" },
+    { category: "Health", limit: 4000, spent: 1500, month: "October 2025" },
+    { category: "Education", limit: 3500, spent: 3400, month: "October 2025" }
+  ]);
+
   const [query, setQuery] = useState("");
   const [sortField, setSortField] = useState("month");
   const [order, setOrder] = useState("desc");
   const [page, setPage] = useState(1);
   const [popup, setPopup] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const itemsPerPage = 10;
-
-  // 🟢 Fetch Budgets
-  const getBudgets = async () => {
-    try {
-      const res = await axios.get(`${URL}/budget/data`, { withCredentials: true });
-    //   setBudgets(res.data.data || []);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err.message);
-    }
-  };
-  useEffect(() => {
-    if (!isPopupOpen) {
-        document.body.style.overflow = ""; // restore default
-    } else {
-        document.body.style.overflow = "hidden"; // prevent background scroll
-    }
-  }, [isPopupOpen]);
+  const itemsPerPage = 6;
 
   useEffect(() => {
+    const getBudgets = async () => {
+      try {
+        const res = await axios.get(`${URL}/budget/data`, { withCredentials: true });
+        // setBudgets(res.data.data || []);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || err.message);
+      }
+    };
     getBudgets();
   }, []);
 
-  const filtered = budgets.filter((b) =>
-    b.category.toLowerCase().includes(query.toLowerCase()) ||
-    b.month.toLowerCase().includes(query.toLowerCase()) ||
-    b.limit.toString().includes(query) ||
-    b.spent.toString().includes(query)
+  const filtered = budgets.filter(
+    (b) =>
+      b.category.toLowerCase().includes(query.toLowerCase()) ||
+      b.month.toLowerCase().includes(query.toLowerCase()) ||
+      b.limit.toString().includes(query) ||
+      b.spent.toString().includes(query)
   );
 
   const sorted = [...filtered].sort((a, b) => {
     const dir = order === "asc" ? 1 : -1;
-
     if (sortField === "limit") return (a.limit - b.limit) * dir;
     if (sortField === "spent") return (a.spent - b.spent) * dir;
     if (sortField === "remaining") return ((a.limit - a.spent) - (b.limit - b.spent)) * dir;
-
     return a.month.localeCompare(b.month) * dir;
   });
 
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
   const paginated = sorted.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
-  const toggleSort = (field) => {
-    if (sortField === field) {
-      setOrder(order === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setOrder("asc");
-    }
-  };
-
-  // ✏️ Edit
   const handleEdit = (b) => {
     setPopup(b);
     setIsPopupOpen(true);
   };
 
-  // ❌ Delete
   const handleDelete = async (b) => {
     try {
       await axios.post(`${URL}/budget/delete`, { id: b._id }, { withCredentials: true });
@@ -97,14 +75,16 @@ const AllBudget = () => {
   const handleClose = () => {
     setPopup(null);
     setIsPopupOpen(false);
+    setVisible(false);
+    setTimeout(() => setOpen(false), 300); // wait for animation to finis
   };
 
   return (
-    <div className="p-6 text-white min-h-screen flex flex-col items-center bg-[#262626] rounded-3xl transition-all duration-[0.7s] ease-in">
-      <h2 className="text-3xl font-semibold mb-8 text-center">📊 All Budgets</h2>
+    <div className="p-6 text-white min-h-screen w-full bg-[#262626] rounded-3xl flex flex-col">
+      <h2 className="text-3xl font-semibold mb-6 text-center">📊 All Budgets</h2>
 
-      {/* 🔍 Search Bar */}
-      <div className="mb-6 w-full flex justify-center">
+      {/* Search */}
+      <div className="mb-6 flex justify-center">
         <input
           type="text"
           placeholder="🔍 Search by category, month, or amount"
@@ -114,79 +94,85 @@ const AllBudget = () => {
         />
       </div>
 
-      <div className="rounded-2xl overflow-hidden shadow-md bg-[#1a1a1a] w-full max-w-5xl">
-        <table className="w-full border-collapse">
-          <thead className="bg-[#0d0d0d] text-gray-300 uppercase text-xs tracking-wider">
-            <tr>
-              <th className="px-4 py-3 text-left font-semibold">Category</th>
-              <th
-                className="px-4 py-3 text-left font-semibold cursor-pointer select-none"
-                onClick={() => toggleSort("limit")}
-              >
-                Limit (₹) {sortField === "limit" ? (order === "asc" ? "↑" : "↓") : ""}
-              </th>
-              <th
-                className="px-4 py-3 text-left font-semibold cursor-pointer select-none"
-                onClick={() => toggleSort("spent")}
-              >
-                Spent (₹) {sortField === "spent" ? (order === "asc" ? "↑" : "↓") : ""}
-              </th>
-              <th
-                className="px-4 py-3 text-left font-semibold cursor-pointer select-none"
-                onClick={() => toggleSort("remaining")}
-              >
-                Remaining {sortField === "remaining" ? (order === "asc" ? "↑" : "↓") : ""}
-              </th>
-              <th className="px-4 py-3 text-left font-semibold">Month</th>
-              <th className="px-4 py-3 text-left font-semibold">Progress</th>
-              <th className="px-4 py-3 text-left font-semibold">Edit</th>
-              <th className="px-4 py-3 text-left font-semibold">Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.length > 0 ? (
-              paginated.map((b) => {
-                const percent = Math.min((b.spent / b.limit) * 100, 100);
-                const remaining = b.limit - b.spent;
-                return (
-                  <tr key={b._id} className="hover:bg-white/5 transition-colors duration-200">
-                    <td className="px-4 py-3">{b.category}</td>
-                    <td className="px-4 py-3">{b.limit.toLocaleString("en-IN")}</td>
-                    <td className="px-4 py-3 text-red-400">{b.spent.toLocaleString("en-IN")}</td>
-                    <td className="px-4 py-3 text-green-400">{remaining.toLocaleString("en-IN")}</td>
-                    <td className="px-4 py-3">{b.month}</td>
-                    <td className="px-4 py-3 w-48">
-                      <LinearProgress
-                        variant="determinate"
-                        value={percent}
-                        sx={{
-                          height: 8,
-                          borderRadius: 2,
-                          backgroundColor: "#333",
-                          "& .MuiLinearProgress-bar": {
-                            backgroundColor: percent > 90 ? "#ef4444" : "#3b82f6",
-                          },
+      {/* Budget Cards */}
+      <div className="flex flex-col gap-4 w-full max-w-5xl mx-auto">
+        <AnimatePresence>
+          {paginated.length > 0 ? (
+            paginated.map((b) => {
+              const percent = Math.min((b.spent / b.limit) * 100, 100);
+              const remaining = b.limit - b.spent;
+
+              return (
+                <motion.div
+                  key={b.category + b.month}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-[#1a1a1a] rounded-2xl p-5 shadow-md hover:shadow-lg transition-all relative group"
+                >
+                  <div className="flex justify-between items-center mb-2 mt-3">
+                    <h3 className="text-lg font-semibold">{b.category}</h3>
+                    <span className="text-sm text-gray-400">{b.month}</span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="flex items-center gap-3 mt-2">
+                    <div
+                      className="relative flex-grow h-3 rounded-full bg-[#333] overflow-hidden"
+                      style={{ borderRadius: "6px" }}
+                    >
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percent}%` }}
+                        transition={{ duration: 1.2, ease: "easeOut" }}
+                        className="absolute top-0 left-0 h-full rounded-full"
+                        style={{
+                          background:
+                            percent > 90
+                              ? "linear-gradient(90deg, #ef4444, #dc2626)"
+                              : percent > 70
+                              ? "linear-gradient(90deg, #facc15, #eab308)"
+                              : "linear-gradient(90deg, #3b82f6, #2563eb)",
+                          boxShadow: `0 0 10px ${
+                            percent > 90 ? "#dc2626" : percent > 70 ? "#eab308" : "#2563eb"
+                          }`,
                         }}
                       />
-                    </td>
-                    <td className="px-4 py-3 cursor-pointer" onClick={() => handleEdit(b)}>
-                      Edit <Edit className="inline w-5 h-5 ml-1" />
-                    </td>
-                    <td className="px-4 py-3 cursor-pointer" onClick={() => handleDelete(b)}>
-                      Delete <Delete className="inline w-5 h-5 ml-1" />
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={8} className="text-center py-6 text-gray-400">
-                  No budgets found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                    </div>
+                    <span className="text-sm text-gray-300 font-medium">{percent.toFixed(0)}%</span>
+                  </div>
+                  {/* Amount Info */}
+                  <div className="flex justify-between text-sm mt-3">
+                    <span className="text-gray-400">
+                      Limit: ₹{b.limit.toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-red-400">
+                      Spent: ₹{b.spent.toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-green-400">
+                      Remaining: ₹{remaining.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+
+                  {/* Hover Icons */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-3">
+                    <Edit
+                      className="w-5 h-5 text-blue-400 cursor-pointer hover:text-blue-300"
+                      onClick={() => handleEdit(b)}
+                    />
+                    <Delete
+                      className="w-5 h-5 text-red-400 cursor-pointer hover:text-red-300"
+                      onClick={() => handleDelete(b)}
+                    />
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <p className="text-center text-gray-400 py-10">No budgets found</p>
+          )}
+        </AnimatePresence>
       </div>
 
       {totalPages > 1 && (
@@ -204,27 +190,31 @@ const AllBudget = () => {
         </div>
       )}
 
-      {/* Edit Popup */}
+      {/* Popup */}
+      {/* <ScrollLock active={isPopupOpen} /> */}
       <AnimatePresence>
         {isPopupOpen && (
-          <Dialog
-            open={isPopupOpen}
-            onClose={handleClose}
-            disableScrollLock={false}
-            PaperProps={{
-              sx: { backgroundColor: "transparent", boxShadow: "none" },
-            }}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: -30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              transition={{ duration: 0.3 }}
-              className="flex justify-center items-center"
+          
+            <Dialog
+              open={isPopupOpen}
+              onClose={handleClose}
+             disableScrollLock={false}
+              TransitionProps={{ timeout: 300 }} 
+              PaperProps={{
+                sx: { backgroundColor: "transparent", boxShadow: "none" },
+              }}
             >
-              {popup && <AddBudget budget={popup} onClose={handleClose} />}
-            </motion.div>
-          </Dialog>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: -30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                transition={{ duration: 0.3 }}
+                className="flex justify-center items-center overflow-hidden !important"
+              >
+                {popup && <AddBudget budget={popup} onClose={handleClose} />}
+              </motion.div>
+            </Dialog>
+          // </>
         )}
       </AnimatePresence>
     </div>
