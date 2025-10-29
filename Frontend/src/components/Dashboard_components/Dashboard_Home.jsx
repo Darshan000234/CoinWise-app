@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AddTransaction from './Home_Components/AddTransaction'
 import Recent_Transaction from './Home_Components/Recent_Transaction'
 import FinanceSummary from './Home_Components/FinanceSummary'
 import BudgetGoals from './Home_Components/BudgetGoals'
 import { useOutletContext } from 'react-router-dom'
-import { Upload, FileImage, FileText } from "lucide-react";
+import { Upload , FileText } from "lucide-react";
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
@@ -13,6 +13,23 @@ const Dashboard_Home = () => {
   const { isCollapsed } = useOutletContext();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const userRes = await axios.get(`${URL}/user/getdata`, {
+          withCredentials: true,
+        });
+        setUser(userRes.data);
+        } catch (err) {
+        toast.error(err?.response?.data?.message || err.message, {
+          duration: 3000,
+        });
+      }
+    };
+    getData();
+  }, []);
+
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (!selected) return;
@@ -53,19 +70,23 @@ const Dashboard_Home = () => {
         <div className="flex justify-between gap-4">
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Total Balance</div>
-            <div className="text-2xl font-bold">$5,000</div>
+            <div className="text-2xl font-bold"> ₹{Number(user?.Net_Saving) || 0}</div>
           </div>
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Total Income</div>
-            <div className="text-2xl font-bold">$3,000</div>
+            <div className="text-2xl font-bold">₹{Number(user?.monthly_income) || 0}</div>
           </div>
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Total Expenses</div>
-            <div className="text-2xl font-bold">$2,000</div>
+            <div className="text-2xl font-bold">₹{Number(user?.Expenses) || 0}</div>
           </div>
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Savings Rate</div>
-            <div className="text-2xl font-bold">40%</div>
+            <div className="text-2xl font-bold">
+              {user?.monthly_income && user?.monthly_income > 0
+                ? `${(((user.monthly_income - (user.Expenses || 0)) / user.monthly_income) * 100).toFixed(1)}%`
+                : "0%"}
+            </div>
           </div>
         </div>
 

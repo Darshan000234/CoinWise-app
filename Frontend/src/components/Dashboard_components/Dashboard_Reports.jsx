@@ -92,29 +92,29 @@ const Dashboard_Reports = () => {
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Total Balance</div>
             <div className="text-2xl font-bold">
-              ₹{user.Net_Saving ?? "0.00"}
+              ₹{Number(user.Net_Saving) || "0"}
             </div>
           </div>
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Total Income</div>
             <div className="text-2xl font-bold">
-              ₹{user.monthly_income ?? "0.00"}
+              ₹{Number(user.monthly_income) || "0"}
             </div>
           </div>
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Total Expenses</div>
             <div className="text-2xl font-bold">
-              ₹{user.Expenses ?? "0.00"}
+              ₹{Number(user.Expenses) || "0"}
             </div>
           </div>
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Average of Expenses</div>
             <div className="text-2xl font-bold">
-              ₹{user.Average ?? "0.00"}
+              ₹{Number(user.Average) || "0"}
             </div>
           </div>
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
-            <div className="text-lg text-gray-400">Highest Spending Category</div>
+            <div className="text-lg text-gray-400 leading-tight">Highest Spending Category</div>
             <div className="text-2xl font-bold">
               {user.Highest ?? "N/A"}
             </div>

@@ -148,7 +148,7 @@ export const Data = async (req, res) => {
       Expenses: "0",
       Net_Saving: baseIncome.toFixed(2),
       Average: "0",
-      Highest: "0",
+      Highest: "N/A",
     };
 
     if (transactions.length === 0) return res.status(200).json(data);
