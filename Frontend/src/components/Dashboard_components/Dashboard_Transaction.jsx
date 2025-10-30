@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dialog } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Delete,Edit } from "lucide-react";
+import { Delete,Edit, Receipt, Search } from "lucide-react";
 
 const URL = import.meta.env.VITE_URL;
 const Dashboard_Transaction = () => {
@@ -96,20 +96,25 @@ const Dashboard_Transaction = () => {
     }
   }
   return (
-    <div className="p-6 text-white min-h-screen flex flex-col items-center bg-[#262626] rounded-3xl transition-all duration-[0.7s] ease-in">
-      <h2 className="text-3xl font-semibold mb-8 text-center">
-        💰 All Transactions
-      </h2>
+     <div className="p-6 text-white min-h-screen flex flex-col items-center bg-[#262626] rounded-3xl transition-all duration-[0.7s] ease-in">
+      {/* Header with Icon */}
+      <div className="flex items-center justify-center gap-2 mb-8">
+        <Receipt className="w-7 h-7 text-green-400" /> {/* ✅ Transaction Icon */}
+        <h2 className="text-3xl font-semibold text-center">All Transactions</h2>
+      </div>
 
       {/* Search Bar */}
       <div className="mb-6 w-full flex justify-center">
-        <input
-          type="text"
-          placeholder="🔍 Search by date, category, notes, or amount"
-          className="bg-[#1c1c1c] text-white px-4 py-3 rounded-lg w-96 focus:ring-2 focus:ring-blue-500 outline-none"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <div className="relative w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search by date, category, notes, or amount"
+            className="bg-[#1c1c1c] text-white pl-10 pr-4 py-3 rounded-lg w-full focus:ring-2 focus:ring-green-500 outline-none"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Styled Table Wrapper */}

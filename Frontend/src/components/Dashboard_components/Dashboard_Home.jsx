@@ -3,6 +3,7 @@ import AddTransaction from './Home_Components/AddTransaction'
 import Recent_Transaction from './Home_Components/Recent_Transaction'
 import FinanceSummary from './Home_Components/FinanceSummary'
 import BudgetGoals from './Home_Components/BudgetGoals'
+import Notification from './Home_Components/Notification'
 import { useOutletContext } from 'react-router-dom'
 import { Upload , FileText } from "lucide-react";
 import axios from 'axios'
@@ -63,7 +64,8 @@ const Dashboard_Home = () => {
 
   return (
     <div>
-      <div>
+      <div className='flex justify-end mr-15'>
+        <Notification />
       </div>
       <div className="mt-6 p-4 flex flex-col gap-6">
         {/* Top 4 summary cards */}

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, LinearProgress, Pagination } from "@mui/material";
+import { Dialog, Pagination } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Edit, Delete } from "lucide-react";
+import { Edit, Delete, Wallet, Search } from "lucide-react"; // ✅ Added icons
 import AddBudget from "./AddBudget";
 
 const URL = import.meta.env.VITE_URL;
@@ -15,7 +15,7 @@ const AllBudget = () => {
     { category: "Shopping", limit: 3000, spent: 2500, month: "October 2025" },
     { category: "Entertainment", limit: 2500, spent: 1900, month: "October 2025" },
     { category: "Health", limit: 4000, spent: 1500, month: "October 2025" },
-    { category: "Education", limit: 3500, spent: 3400, month: "October 2025" }
+    { category: "Education", limit: 3500, spent: 3400, month: "October 2025" },
   ]);
 
   const [query, setQuery] = useState("");
@@ -75,23 +75,28 @@ const AllBudget = () => {
   const handleClose = () => {
     setPopup(null);
     setIsPopupOpen(false);
-    setVisible(false);
-    setTimeout(() => setOpen(false), 300); // wait for animation to finis
   };
 
   return (
     <div className="p-6 text-white min-h-screen w-full bg-[#262626] rounded-3xl flex flex-col">
-      <h2 className="text-3xl font-semibold mb-6 text-center">📊 All Budgets</h2>
+      {/* Title with Wallet Icon */}
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <Wallet className="w-7 h-7 text-blue-400" />
+        <h2 className="text-3xl font-semibold text-center">All Budgets</h2>
+      </div>
 
       {/* Search */}
       <div className="mb-6 flex justify-center">
-        <input
-          type="text"
-          placeholder="🔍 Search by category, month, or amount"
-          className="bg-[#1c1c1c] text-white px-4 py-3 rounded-lg w-96 focus:ring-2 focus:ring-blue-500 outline-none"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+        <div className="relative w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search by category, month, or amount"
+            className="bg-[#1c1c1c] text-white pl-10 pr-4 py-3 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Budget Cards */}
@@ -118,10 +123,7 @@ const AllBudget = () => {
 
                   {/* Progress Bar */}
                   <div className="flex items-center gap-3 mt-2">
-                    <div
-                      className="relative flex-grow h-3 rounded-full bg-[#333] overflow-hidden"
-                      style={{ borderRadius: "6px" }}
-                    >
+                    <div className="relative flex-grow h-3 rounded-full bg-[#333] overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${percent}%` }}
@@ -142,6 +144,7 @@ const AllBudget = () => {
                     </div>
                     <span className="text-sm text-gray-300 font-medium">{percent.toFixed(0)}%</span>
                   </div>
+
                   {/* Amount Info */}
                   <div className="flex justify-between text-sm mt-3">
                     <span className="text-gray-400">
@@ -175,6 +178,7 @@ const AllBudget = () => {
         </AnimatePresence>
       </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <Pagination
@@ -191,30 +195,27 @@ const AllBudget = () => {
       )}
 
       {/* Popup */}
-      {/* <ScrollLock active={isPopupOpen} /> */}
       <AnimatePresence>
         {isPopupOpen && (
-          
-            <Dialog
-              open={isPopupOpen}
-              onClose={handleClose}
-             disableScrollLock={false}
-              TransitionProps={{ timeout: 300 }} 
-              PaperProps={{
-                sx: { backgroundColor: "transparent", boxShadow: "none" },
-              }}
+          <Dialog
+            open={isPopupOpen}
+            onClose={handleClose}
+            disableScrollLock={false}
+            TransitionProps={{ timeout: 300 }}
+            PaperProps={{
+              sx: { backgroundColor: "transparent", boxShadow: "none" },
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: -30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ duration: 0.3 }}
+              className="flex justify-center items-center overflow-hidden"
             >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, y: -30 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                transition={{ duration: 0.3 }}
-                className="flex justify-center items-center overflow-hidden !important"
-              >
-                {popup && <AddBudget budget={popup} onClose={handleClose} />}
-              </motion.div>
-            </Dialog>
-          // </>
+              {popup && <AddBudget budget={popup} onClose={handleClose} />}
+            </motion.div>
+          </Dialog>
         )}
       </AnimatePresence>
     </div>

@@ -1,38 +1,59 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { User, Bell, Shield, Paintbrush, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
 
+const URL = import.meta.env.VITE_URL;
+
 const Dashboard_Setting = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [profile, setProfile] = useState({});
+  const [notifications, setNotifications] = useState({});
+  const [appearance, setAppearance] = useState({});
+  const [password, setPassword] = useState({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // static data for now
-  const [profile, setProfile] = useState({
-    name: "Darshan Desale",
-    email: "darshan@email.com",
-    currency: "INR (₹)",
-  });
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get(`${URL}/user/settings`, {
+          withCredentials: true,
+        });
+        setProfile(response.data.profile);
+        setNotifications(response.data.notifications);
+        setAppearance(response.data.appearance);
+      } catch (err) {
+        toast.error("Failed to load settings");
+      }
+    };
+    fetchSettings();
+  }, []);
 
-  const [notifications, setNotifications] = useState({
-    weeklyReport: true,
-    monthlySummary: true,
-    budgetAlerts: false,
-  });
-
-  const [appearance, setAppearance] = useState({
-    theme: "dark",
-  });
-
-  // Simulated save function
-  const handleSave = async (section) => {
+  const handleSave = async (section, data) => {
     try {
-      // Example API call placeholder
-      // await axios.put(`/api/settings/${section}`, { data });
+      await axios.post(
+        `${URL}/user/settings_update/${section}`,
+        { data },
+        { withCredentials: true }
+      );
       toast.success(`${section} settings saved successfully!`);
     } catch (err) {
       toast.error("Failed to save settings");
+    }
+  };
+
+  // ✅ Account Deletion Handler
+  const handleDeleteAccount = async () => {
+    try {
+      await axios.delete(`${URL}/user/delete`, { withCredentials: true });
+      toast.success("Account deleted successfully!");
+      setConfirmOpen(false);
+      // Optional: redirect to homepage
+      window.location.href = "/";
+    } catch (err) {
+      toast.error("Failed to delete account");
     }
   };
 
@@ -45,17 +66,18 @@ const Dashboard_Setting = () => {
   ];
 
   return (
-    <div className="flex rounded-2xl bg-white/5 h-full w-full p-4 gap-4">
+    <div className="flex rounded-2xl bg-white/5 h-full w-full p-4 gap-4 relative">
       {/* Left Drawer */}
-      <div className="w-[15rem] bg-white/5 rounded-2xl p-3 flex flex-col space-y-2 gap-3">
+      <div className="w-[15rem] bg-white/5 rounded-2xl p-5 flex flex-col space-y-2 gap-3 h-[23rem] pt-10">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200
-              ${activeTab === tab.id
-                ? "bg-indigo-600 text-white"
-                : "text-gray-300 hover:bg-white/10"
+              ${
+                activeTab === tab.id
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-300 hover:bg-white/10"
               }`}
           >
             {tab.icon}
@@ -79,33 +101,34 @@ const Dashboard_Setting = () => {
             <div className="space-y-4">
               <input
                 type="text"
+                placeholder="Full Name"
                 className="w-full bg-white/10 p-2 rounded-lg text-gray-200 outline-none"
-                value={profile.name}
+                value={profile.full_name || ""}
                 onChange={(e) =>
-                  setProfile({ ...profile, name: e.target.value })
+                  setProfile({ ...profile, full_name: e.target.value })
                 }
               />
               <input
                 type="email"
+                placeholder="Email"
                 className="w-full bg-white/10 p-2 rounded-lg text-gray-200 outline-none"
-                value={profile.email}
+                value={profile.email || ""}
                 onChange={(e) =>
                   setProfile({ ...profile, email: e.target.value })
                 }
+                disabled
               />
-              <select
+              <input
+                type="number"
+                placeholder="Monthly Income"
                 className="w-full bg-white/10 p-2 rounded-lg text-gray-200 outline-none"
-                value={profile.currency}
+                value={profile.monthly_income || ""}
                 onChange={(e) =>
-                  setProfile({ ...profile, currency: e.target.value })
+                  setProfile({ ...profile, monthly_income: e.target.value })
                 }
-              >
-                <option>INR (₹)</option>
-                <option>USD ($)</option>
-                <option>EUR (€)</option>
-              </select>
+              />
               <button
-                onClick={() => handleSave("profile")}
+                onClick={() => handleSave("profile", profile)}
                 className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700"
               >
                 Save Changes
@@ -129,8 +152,6 @@ const Dashboard_Setting = () => {
                   <span className="capitalize text-gray-300">
                     {key.replace(/([A-Z])/g, " $1")}
                   </span>
-
-                  {/* ✅ Custom Toggle */}
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -149,7 +170,7 @@ const Dashboard_Setting = () => {
                 </div>
               ))}
               <button
-                onClick={() => handleSave("notifications")}
+                onClick={() => handleSave("notifications", notifications)}
                 className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 mt-4"
               >
                 Save Preferences
@@ -162,10 +183,8 @@ const Dashboard_Setting = () => {
         {activeTab === "appearance" && (
           <div>
             <h2 className="text-xl font-semibold mb-4">Appearance</h2>
-
             <div className="flex items-center gap-3">
               <span className="text-gray-300">Theme:</span>
-
               <FormControl
                 sx={{
                   minWidth: 160,
@@ -196,20 +215,20 @@ const Dashboard_Setting = () => {
                 >
                   Theme
                 </InputLabel>
-
                 <Select
-                  value={appearance.theme}
+                  value={appearance.theme || "dark"}
                   label="Theme"
-                  onChange={(e) => setAppearance({ theme: e.target.value })}
+                  onChange={(e) =>
+                    setAppearance({ theme: e.target.value })
+                  }
                 >
                   <MenuItem value="dark">Dark</MenuItem>
                   <MenuItem value="light">Light</MenuItem>
                 </Select>
               </FormControl>
             </div>
-
             <button
-              onClick={() => handleSave("appearance")}
+              onClick={() => handleSave("appearance", appearance)}
               className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 mt-4"
             >
               Save Appearance
@@ -223,16 +242,22 @@ const Dashboard_Setting = () => {
             <h2 className="text-xl font-semibold mb-4">Security</h2>
             <input
               type="password"
-              placeholder="New Password"
+              placeholder="Current Password"
+              onChange={(e) =>
+                setPassword({ ...password, current_password: e.target.value })
+              }
               className="w-full bg-white/10 p-2 rounded-lg text-gray-200 outline-none mb-3"
             />
             <input
               type="password"
-              placeholder="Confirm Password"
+              placeholder="New Password"
+              onChange={(e) =>
+                setPassword({ ...password, new_password: e.target.value })
+              }
               className="w-full bg-white/10 p-2 rounded-lg text-gray-200 outline-none mb-3"
             />
             <button
-              onClick={() => handleSave("security")}
+              onClick={() => handleSave("security", password)}
               className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700"
             >
               Update Password
@@ -250,12 +275,55 @@ const Dashboard_Setting = () => {
               Once you delete your account, all your data will be permanently
               removed.
             </p>
-            <button className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700">
+            <button
+              onClick={() => setConfirmOpen(true)}
+              className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700"
+            >
               Delete Account
             </button>
           </div>
         )}
       </motion.div>
+
+      {/* ✅ Confirm Delete Popup */}
+      <AnimatePresence>
+        {confirmOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="bg-gray-900 p-6 rounded-2xl w-[20rem] shadow-lg text-center"
+            >
+              <h3 className="text-lg text-red-400 font-semibold mb-3">
+                Confirm Deletion
+              </h3>
+              <p className="text-gray-300 mb-6">
+                Are you sure you want to delete your account permanently?
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setConfirmOpen(false)}
+                  className="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700"
+                >
+                  Confirm
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

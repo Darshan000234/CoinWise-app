@@ -12,6 +12,7 @@ import {
 import { Line } from "react-chartjs-2";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { Wallet2 } from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -58,7 +59,7 @@ const FinanceSummary = ({ isCollapsed, userId }) => {
           className="p-6 bg-[#1a1a1a] rounded-2xl shadow-2xl flex flex-col items-center justify-center min-h-[300px]"
           style={{ width: isCollapsed ? "1350px" : "1250px" }}
         >
-          <span className="text-5xl text-gray-500 mb-4">📊</span>
+          <Wallet2 size={60} className="text-emerald-400 mb-4" />
           <h2 className="text-xl text-gray-400 font-semibold mb-2 text-center">
             No transactions added yet
           </h2>

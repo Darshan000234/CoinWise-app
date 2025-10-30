@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
   },
   monthly_income: {
     type: Number,
-    default: null,
+    default: 0,
   },
   auth_provider: {
     type: String,
@@ -41,6 +41,27 @@ const userSchema = new mongoose.Schema({
   is_verified: {
     type: Boolean,
     default: false,
+  },
+  notifications: {
+    MonthlyReport: {
+      type: Boolean,
+      default: true,
+    },
+    Download: {
+      type: Boolean,
+      default: true,
+    },
+    budgetAlerts: {
+      type: Boolean,
+      default: true, // changed from false per your request
+    },
+  },
+  appearance: {
+    theme: {
+      type: String,
+      enum: ["Light", "Dark"],
+      default: "Dark",
+    },
   },
   created_at: {
     type: Date,

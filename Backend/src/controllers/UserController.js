@@ -180,3 +180,85 @@ export const Data = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch data", error: error.message });
   }
 };
+
+export const getProfile = async (req, res) => {
+    const id = req.user.id;
+    try {
+        const user = await User.findById(id).select("full_name email monthly_income notifications appearance");
+        const Data = {
+            profile:{
+                fullname: user.full_name,
+                email: user.email,
+                monthly_income: user.monthly_income
+            },
+            notifications:{
+                MonthlyReport: user.notifications.MonthlyReport,
+                Download: user.notifications.Download,
+                budgetAlerts: user.notifications.budgetAlerts
+            },
+            apperance: user.appearance
+        }
+        res.status(200).json({Data});
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch profile", error: error.message });
+    }
+}
+
+export const updateProfile = async (req, res) => {
+  const id = req.user.id;
+  const section = req.params.section;
+  const { data } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    switch (section) {
+      case "profile":
+        if (data.full_name) user.full_name = data.full_name;
+        if (data.monthly_income) user.monthly_income = data.monthly_income;
+        break;
+
+      case "notifications":
+        user.notifications = { ...user.notifications, ...data };
+        break;
+
+      case "appearance":
+        user.appearance = { ...user.appearance, ...data };
+        break;
+
+      case "security":
+        const {Current_Password,New_Password} = data;
+        if (!Current_Password || !New_Password) {
+          return res.status(400).json({ message: "Current and New passwords are required" });
+        }
+        const passwordMatch = await bcrypt.compare(Current_Password, user.password_hash);
+        if (!passwordMatch) {
+          return res.status(401).json({ message: "Current password is incorrect" });
+        }
+        const salt = await bcrypt.genSalt(10);
+        user.password_hash = await bcrypt.hash(New_Password, salt);
+        break;
+      case "account":
+        await User.findByIdAndDelete(id);
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+        });
+        return res.status(200).json({ message: 'Account deleted successfully' });
+      default:
+        return res.status(400).json({ message: "Invalid section" });
+    }
+
+    await user.save();
+    res.status(200).json({ message: `${section} updated successfully` });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update profile",
+      error: error.message,
+    });
+  }
+};
