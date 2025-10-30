@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import { Data } from "../controllers/UserController.js";
 import Report from "../models/Report.js";
 import { generatePdfWithPuppeteer } from "../utils/pdfGenerator.js";
-// import
+import Notification from "../models/Notification.js";
 
 const URL = process.env.URL;
 
@@ -209,7 +209,10 @@ export const download = async (req, res) => {
     if (!report?.pdfPath) {
       return res.status(404).json({ error: "PDF not found" });
     }
-
+    await Notification.create({
+      user_id: report.userId,
+      message: `Your report for ${report.month}  was downloaded.`,
+    });
     res.download(report.pdfPath);
   } catch (err) {
     console.error("Error downloading PDF:", err);

@@ -43,24 +43,15 @@ const userSchema = new mongoose.Schema({
     default: false,
   },
   notifications: {
-    MonthlyReport: {
-      type: Boolean,
-      default: true,
-    },
-    Download: {
-      type: Boolean,
-      default: true,
-    },
-    budgetAlerts: {
-      type: Boolean,
-      default: true, // changed from false per your request
-    },
+    monthlyReport: { type: Boolean, default: true },
+    download: { type: Boolean, default: true },
+    budgetAlerts: { type: Boolean, default: true },
   },
   appearance: {
     theme: {
       type: String,
-      enum: ["Light", "Dark"],
-      default: "Dark",
+      enum: ["dark", "light"],
+      default: "dark",
     },
   },
   created_at: {

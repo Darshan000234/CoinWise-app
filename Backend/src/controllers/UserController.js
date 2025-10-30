@@ -219,6 +219,7 @@ export const updateProfile = async (req, res) => {
       case "profile":
         if (data.full_name) user.full_name = data.full_name;
         if (data.monthly_income) user.monthly_income = data.monthly_income;
+        if (data.email) user.email = data.email;
         break;
 
       case "notifications":

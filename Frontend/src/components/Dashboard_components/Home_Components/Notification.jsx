@@ -2,22 +2,44 @@ import React, { useState, useEffect } from "react";
 import { Bell, Trash2 } from "lucide-react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 
+const URL = import.meta.env.VITE_URL;
 const Notification = () => {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
-  // useEffect(() => {
-  //   // Fetch notifications from backend
-  //   // axios.get("/api/notifications")
-  //   //   .then((res) => setNotifications(res.data))
-  //   //   .catch((err) => console.error(err));
-  // }, []);
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await axios.get(`${URL}/notification/addNotification`,{withCredentials:true});
+        setNotifications(response.data.notifications);
+        // toast.success("Notifications fetched successfully");
+      } catch (error) {
+        // toast.error("Failed to fetch notifications");
+      }
+    }
+    getData();
+    const validateSession = async () => {
+      try {
+        const res = await axios.get(`${URL}/user/validate-session`, { withCredentials: true });
+        if (!res.data.isValid) navigate('/');
+      } catch {
+        navigate('/');
+      }
+    };
+    validateSession();
+  }, []);
 
-  // const clearAll = async () => {
-  //   await axios.delete("/api/notifications/clear");
-  //   setNotifications([]);
-  // };
+  const clearAll = async () => {
+    try {
+      await axios.get(`${URL}/notification/deleteNotification`,{withCredentials:true});
+      setNotifications([]);
+      toast.success("All notifications cleared");
+    } catch (error) {
+      toast.error("Failed to clear notifications");
+    }
+  };
 
   return (
     <div className="relative cursor-pointer">

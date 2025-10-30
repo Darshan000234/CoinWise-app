@@ -29,6 +29,15 @@ const Dashboard_Setting = () => {
       }
     };
     fetchSettings();
+    const validateSession = async () => {
+      try {
+        const res = await axios.get(`${URL}/user/validate-session`, { withCredentials: true });
+        if (!res.data.isValid) navigate('/');
+      } catch {
+        navigate('/');
+      }
+    };
+    validateSession();
   }, []);
 
   const handleSave = async (section, data) => {
@@ -47,10 +56,10 @@ const Dashboard_Setting = () => {
   // ✅ Account Deletion Handler
   const handleDeleteAccount = async () => {
     try {
-      await axios.delete(`${URL}/user/delete`, { withCredentials: true });
+      const section = "account";
+      await axios.get(`${URL}/user/settings_update/${section}`, { withCredentials: true });
       toast.success("Account deleted successfully!");
       setConfirmOpen(false);
-      // Optional: redirect to homepage
       window.location.href = "/";
     } catch (err) {
       toast.error("Failed to delete account");
@@ -244,7 +253,7 @@ const Dashboard_Setting = () => {
               type="password"
               placeholder="Current Password"
               onChange={(e) =>
-                setPassword({ ...password, current_password: e.target.value })
+                setPassword({ ...password, Current_Password: e.target.value })
               }
               className="w-full bg-white/10 p-2 rounded-lg text-gray-200 outline-none mb-3"
             />
@@ -252,7 +261,7 @@ const Dashboard_Setting = () => {
               type="password"
               placeholder="New Password"
               onChange={(e) =>
-                setPassword({ ...password, new_password: e.target.value })
+                setPassword({ ...password, New_Password: e.target.value })
               }
               className="w-full bg-white/10 p-2 rounded-lg text-gray-200 outline-none mb-3"
             />

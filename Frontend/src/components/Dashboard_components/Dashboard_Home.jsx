@@ -29,6 +29,15 @@ const Dashboard_Home = () => {
       }
     };
     getData();
+    const validateSession = async () => {
+      try {
+        const res = await axios.get(`${URL}/user/validate-session`, { withCredentials: true });
+        if (!res.data.isValid) navigate('/');
+      } catch {
+        navigate('/');
+      }
+    };
+    validateSession();
   }, []);
 
   const handleFileChange = (e) => {

@@ -34,6 +34,15 @@ const Dashboard_Transaction = () => {
       }
     }
     getData();
+    const validateSession = async () => {
+      try {
+        const res = await axios.get(`${URL}/user/validate-session`, { withCredentials: true });
+        if (!res.data.isValid) navigate('/');
+      } catch {
+        navigate('/');
+      }
+    };
+    validateSession();
     const interval = setInterval(getData,3000);
     return () => clearInterval(interval);
   }, [])
