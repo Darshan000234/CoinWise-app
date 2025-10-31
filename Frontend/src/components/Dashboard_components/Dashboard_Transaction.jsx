@@ -6,9 +6,11 @@ import { Dialog } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Delete,Edit, Receipt, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const URL = import.meta.env.VITE_URL;
 const Dashboard_Transaction = () => {
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState([{
       _id: "1",
       date: "2025-10-12",

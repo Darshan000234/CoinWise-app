@@ -1,7 +1,12 @@
 import {useEffect } from 'react'
 import AddBudget from './Budget_Components/AddBudget'
 import AllBudget from './Budget_Components/AllBudget'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const URL = import.meta.env.VITE_URL;
 const Dashboard_Budgets = () => {
+  const navigate = useNavigate();
   useEffect(() => {
     const validateSession = async () => {
       try {

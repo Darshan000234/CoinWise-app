@@ -4,10 +4,12 @@ import toast from "react-hot-toast";
 import Monthweek_report from "./Report_Components/Monthweek_report";
 import {generateInsights} from "./Report_Components/generateInsights";
 import MonthComparison_report from "./Report_Components/MonthComparison_report";
+import { useNavigate } from "react-router-dom";
 
 const URL = import.meta.env.VITE_URL;
 
 const Dashboard_Reports = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState({});
   const [reportData, setReportData] = useState(null);
   const reportRef = useRef();

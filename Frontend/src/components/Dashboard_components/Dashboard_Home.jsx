@@ -4,13 +4,14 @@ import Recent_Transaction from './Home_Components/Recent_Transaction'
 import FinanceSummary from './Home_Components/FinanceSummary'
 import BudgetGoals from './Home_Components/BudgetGoals'
 import Notification from './Home_Components/Notification'
-import { useOutletContext } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Upload , FileText } from "lucide-react";
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
 const URL = import.meta.env.VITE_URL;
 const Dashboard_Home = () => {
+  const navigate = useNavigate();
   const { isCollapsed } = useOutletContext();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);

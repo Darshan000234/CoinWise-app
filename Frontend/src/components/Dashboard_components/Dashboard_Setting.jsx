@@ -4,14 +4,15 @@ import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { User, Bell, Shield, Paintbrush, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const URL = import.meta.env.VITE_URL;
 
 const Dashboard_Setting = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
   const [profile, setProfile] = useState({});
   const [notifications, setNotifications] = useState({});
-  const [appearance, setAppearance] = useState({});
   const [password, setPassword] = useState({});
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -21,9 +22,8 @@ const Dashboard_Setting = () => {
         const response = await axios.get(`${URL}/user/settings`, {
           withCredentials: true,
         });
-        setProfile(response.data.profile);
-        setNotifications(response.data.notifications);
-        setAppearance(response.data.appearance);
+        setProfile(response.data.Data.profile || {});
+        setNotifications(response.data.Data.notifications || {});
       } catch (err) {
         toast.error("Failed to load settings");
       }
@@ -40,6 +40,7 @@ const Dashboard_Setting = () => {
     validateSession();
   }, []);
 
+  
   const handleSave = async (section, data) => {
     try {
       await axios.post(
@@ -69,7 +70,6 @@ const Dashboard_Setting = () => {
   const tabs = [
     { id: "profile", name: "Profile", icon: <User size={18} /> },
     { id: "notifications", name: "Notifications", icon: <Bell size={18} /> },
-    { id: "appearance", name: "Appearance", icon: <Paintbrush size={18} /> },
     { id: "security", name: "Security", icon: <Shield size={18} /> },
     { id: "account", name: "Account", icon: <Trash2 size={18} /> },
   ];
@@ -185,63 +185,6 @@ const Dashboard_Setting = () => {
                 Save Preferences
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Appearance */}
-        {activeTab === "appearance" && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Appearance</h2>
-            <div className="flex items-center gap-3">
-              <span className="text-gray-300">Theme:</span>
-              <FormControl
-                sx={{
-                  minWidth: 160,
-                  bgcolor: "#1f1f1f",
-                  borderRadius: "0.5rem",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#4b5563",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#6366f1",
-                  },
-                  "& .MuiSvgIcon-root": {
-                    color: "#9ca3af",
-                  },
-                  "& .MuiSelect-select": {
-                    color: "#e5e7eb",
-                    py: "8px",
-                    px: "12px",
-                  },
-                }}
-                size="small"
-              >
-                <InputLabel
-                  sx={{
-                    color: "#9ca3af",
-                    "&.Mui-focused": { color: "#6366f1" },
-                  }}
-                >
-                  Theme
-                </InputLabel>
-                <Select
-                  value={appearance.theme || "dark"}
-                  label="Theme"
-                  onChange={(e) =>
-                    setAppearance({ theme: e.target.value })
-                  }
-                >
-                  <MenuItem value="dark">Dark</MenuItem>
-                  <MenuItem value="light">Light</MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-            <button
-              onClick={() => handleSave("appearance", appearance)}
-              className="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 mt-4"
-            >
-              Save Appearance
-            </button>
           </div>
         )}
 

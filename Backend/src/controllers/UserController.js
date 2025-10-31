@@ -187,13 +187,13 @@ export const getProfile = async (req, res) => {
         const user = await User.findById(id).select("full_name email monthly_income notifications appearance");
         const Data = {
             profile:{
-                fullname: user.full_name,
+                full_name: user.full_name,
                 email: user.email,
                 monthly_income: user.monthly_income
             },
             notifications:{
-                MonthlyReport: user.notifications.MonthlyReport,
-                Download: user.notifications.Download,
+                MonthlyReport: user.notifications.monthlyReport,
+                Download: user.notifications.download,
                 budgetAlerts: user.notifications.budgetAlerts
             },
             apperance: user.appearance
@@ -221,15 +221,9 @@ export const updateProfile = async (req, res) => {
         if (data.monthly_income) user.monthly_income = data.monthly_income;
         if (data.email) user.email = data.email;
         break;
-
       case "notifications":
         user.notifications = { ...user.notifications, ...data };
         break;
-
-      case "appearance":
-        user.appearance = { ...user.appearance, ...data };
-        break;
-
       case "security":
         const {Current_Password,New_Password} = data;
         if (!Current_Password || !New_Password) {

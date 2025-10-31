@@ -47,13 +47,6 @@ const userSchema = new mongoose.Schema({
     download: { type: Boolean, default: true },
     budgetAlerts: { type: Boolean, default: true },
   },
-  appearance: {
-    theme: {
-      type: String,
-      enum: ["dark", "light"],
-      default: "dark",
-    },
-  },
   created_at: {
     type: Date,
     default: Date.now,
