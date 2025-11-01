@@ -3,7 +3,7 @@ const router = express.Router();
 const TransactionController = require('../controllers/TransactionController');
 const isloggedIn = require('../middlewares/isloggedIn');
 const multer = require('multer');
-const storage = multer.memoryStorage(); // ✅ store in memory, not on disk
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.get('/',isloggedIn.authMiddleware,TransactionController.TransactionData);

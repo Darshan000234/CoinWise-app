@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import Monthweek_report from "./Report_Components/Monthweek_report";
-import {generateInsights} from "./Report_Components/generateInsights";
+import { generateInsights } from "./Report_Components/generateInsights";
 import MonthComparison_report from "./Report_Components/MonthComparison_report";
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +14,7 @@ const Dashboard_Reports = () => {
   const [reportData, setReportData] = useState(null);
   const reportRef = useRef();
   const chartRefs = [useRef(), useRef(), useRef()];
+
   useEffect(() => {
     const getData = async () => {
       try {
@@ -21,30 +22,40 @@ const Dashboard_Reports = () => {
           withCredentials: true,
         });
         setUser(userRes.data);
+
         const reportRes = await axios.get(`${URL}/dashboard/report/data`, {
           withCredentials: true,
         });
-        setReportData(reportRes.data);
-        if(reportData?.current && userRes?.data){
-          reportData.current.totalIncome =  userRes.data.monthly_income;
-          reportData.current.totalSpend =  userRes.data.Expenses;
-          reportData.current.netSaving = userRes.data.Net_Saving;
+        const data = reportRes.data;
+        setReportData(data);
+
+        if (data?.current?.summary) {
+          setUser((prev) => ({
+            ...prev,
+            monthly_income: data.current.summary.monthly_income,
+            Expenses: data.current.summary.Expenses,
+            Net_Saving: data.current.summary.Net_Saving,
+            Average: data.current.summary.Average,
+            Highest: data.current.summary.Highest,
+          }));
         }
-        } catch (err) {
+      } catch (err) {
         toast.error(err?.response?.data?.message || err.message, {
           duration: 3000,
         });
       }
     };
-    getData();
+
     const validateSession = async () => {
       try {
         const res = await axios.get(`${URL}/user/validate-session`, { withCredentials: true });
         if (!res.data.isValid) navigate('/');
+        else getData();
       } catch {
         navigate('/');
       }
     };
+
     validateSession();
   }, []);
 
@@ -64,14 +75,22 @@ const Dashboard_Reports = () => {
           };
         })
         .filter(Boolean);
-      const insights = generateInsights(reportData.current, reportData.previous);
+
+      const insights = generateInsights(
+        reportData.current.summary,
+        reportData.previous.summary
+      );
+
       const payload = {
         userId: user._id,
-        month: new Date().toISOString().slice(0, 7), // e.g., 2025-10
+        month: new Date().toISOString().slice(0, 7),
         data: {
-          totalIncome: reportData.current.totalIncome,
-          totalSpend: reportData.current.totalSpend,
-          totalSaved: reportData.current.totalIncome - reportData.current.totalSpend,
+          totalIncome: Number(reportData.current.summary.monthly_income),
+          totalSpend: Number(reportData.current.summary.Expenses),
+          totalSaved:
+            Number(reportData.current.summary.Net_Saving) ||
+            (Number(reportData.current.summary.monthly_income) -
+              Number(reportData.current.summary.Expenses)),
           categoryData: reportData.current.categoryData ?? [],
           insight: insights,
         },
@@ -82,6 +101,7 @@ const Dashboard_Reports = () => {
         withCredentials: true,
       });
       const reportId = saveRes.data.reportId;
+
       const genRes = await axios.post(
         `${URL}/dashboard/report/generate/${reportId}`,
         {},
@@ -91,7 +111,7 @@ const Dashboard_Reports = () => {
       toast.success("PDF generated successfully!");
       window.open(downloadUrl, "_blank");
     } catch (err) {
-      console.error(err,"PDF Generation Error");
+      console.error(err, "PDF Generation Error");
       toast.error(err?.response?.data?.error || "Failed to generate PDF");
     }
   };
@@ -100,42 +120,18 @@ const Dashboard_Reports = () => {
     <div>
       <div className="mt-6 p-3 flex flex-col gap-6">
         <div className="flex justify-between gap-4 flex-wrap">
-          <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
-            <div className="text-lg text-gray-400">Total Balance</div>
-            <div className="text-2xl font-bold">
-              ₹{Number(user.Net_Saving) || "0"}
-            </div>
-          </div>
-          <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
-            <div className="text-lg text-gray-400">Total Income</div>
-            <div className="text-2xl font-bold">
-              ₹{Number(user.monthly_income) || "0"}
-            </div>
-          </div>
-          <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
-            <div className="text-lg text-gray-400">Total Expenses</div>
-            <div className="text-2xl font-bold">
-              ₹{Number(user.Expenses) || "0"}
-            </div>
-          </div>
-          <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
-            <div className="text-lg text-gray-400">Average of Expenses</div>
-            <div className="text-2xl font-bold">
-              ₹{Number(user.Average) || "0"}
-            </div>
-          </div>
-          <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
-            <div className="text-lg text-gray-400 leading-tight">Highest Spending Category</div>
-            <div className="text-2xl font-bold">
-              {user.Highest ?? "N/A"}
-            </div>
-          </div>
+          <SummaryCard title="Total Balance" value={`₹${Number(user.Net_Saving) || 0}`} />
+          <SummaryCard title="Total Income" value={`₹${Number(user.monthly_income) || 0}`} />
+          <SummaryCard title="Total Expenses" value={`₹${Number(user.Expenses) || 0}`} />
+          <SummaryCard title="Average of Expenses" value={`₹${Number(user.Average) || 0}`} />
+          <SummaryCard title="Highest Spending Category" value={user.Highest ?? "N/A"} />
         </div>
       </div>
 
-      <div  ref={reportRef} className="bg-white/5 p-6 min-h-screen rounded-3xl">
+      <div ref={reportRef} className="bg-white/5 p-6 min-h-screen rounded-3xl">
         <div className="bg-[#1a1a1a] text-white p-8 rounded-2xl mt-10 shadow-xl">
           <Monthweek_report chartRefs={chartRefs} />
+
           <div className="flex flex-col items-start mt-8">
             <button
               onClick={handleGeneratePDF}
@@ -147,13 +143,22 @@ const Dashboard_Reports = () => {
               Includes summary, charts, and personalized insights
             </p>
           </div>
-          <div>
-            <MonthComparison_report currentMonthData={reportData?.current?.categoryData || []} previousMonthData={reportData?.previous?.categoryData || []}/>
-          </div>
+
+          <MonthComparison_report
+            currentMonthData={reportData?.current?.categoryData || []}
+            previousMonthData={reportData?.previous?.categoryData || []}
+          />
         </div>
       </div>
     </div>
   );
 };
+
+const SummaryCard = ({ title, value }) => (
+  <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
+    <div className="text-lg text-gray-400 leading-tight">{title}</div>
+    <div className="text-2xl font-bold">{value}</div>
+  </div>
+);
 
 export default Dashboard_Reports;

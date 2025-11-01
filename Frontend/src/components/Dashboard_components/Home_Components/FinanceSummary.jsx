@@ -30,12 +30,11 @@ const FinanceSummary = ({ isCollapsed, userId }) => {
   const [categoryData, setCategoryData] = useState([]);
 
   useEffect(() => {
-    let isMounted = true;
 
     const fetchCategoryData = async () => {
       try {
         const res = await axios.get(`${URL}/transaction/category`, {withCredentials: true});
-        if (isMounted) setCategoryData(res.data.data || []);
+        setCategoryData(res.data.data || []);
       } catch (err) {
         toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
       }
@@ -44,12 +43,10 @@ const FinanceSummary = ({ isCollapsed, userId }) => {
     fetchCategoryData();
     const interval = setInterval(fetchCategoryData, 5000);
     return () => {
-      isMounted = false;
       clearInterval(interval);
     };
-  }, [userId]);
+  }, []);
 
-  // Handle empty state
   if (categoryData.length === 0) {
     return (
       <div
@@ -71,12 +68,11 @@ const FinanceSummary = ({ isCollapsed, userId }) => {
     );
   }
 
-  // Chart data
   const lineData = {
-    labels: categoryData.map((c) => c._id), // _id is category name
+    labels: categoryData.map((c) => c._id),
     datasets: [
       {
-        label: "Total Spend ($)",
+        label: "Total Spend (₹)",
         data: categoryData.map((c) => c.totalAmount),
         borderColor: "#3B82F6",
         backgroundColor: function (context) {

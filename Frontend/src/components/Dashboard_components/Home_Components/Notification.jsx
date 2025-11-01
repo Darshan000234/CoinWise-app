@@ -54,7 +54,6 @@ const Notification = () => {
 
   return (
     <div className="relative cursor-pointer">
-      {/* Bell Icon */}
       <button
         onClick={() => {
           if (notifications.length > 0) setOpen(!open);
@@ -73,7 +72,6 @@ const Notification = () => {
         )}
       </button>
 
-      {/* Notification Dropdown */}
       <AnimatePresence>
         {open && notifications.length > 0 && (
           <motion.div
@@ -96,7 +94,7 @@ const Notification = () => {
             <div className="max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700">
               {notifications.map((n, index) => (
                 <div
-                  key={n._id || index} // ✅ Safe fallback key
+                  key={n._id || index}
                   className="px-4 py-3 border-b border-gray-800 hover:bg-[#222]"
                 >
                   <p className="text-gray-200 text-sm">

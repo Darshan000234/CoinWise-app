@@ -20,7 +20,7 @@ const BudgetSchema = new mongoose.Schema(
     month: {
       type: String,
       required: true,
-      match: [/^\d{4}-(0[1-9]|1[0-2])$/, "Month must be in YYYY-MM format"], // e.g. 2025-10
+      match: [/^\d{4}-(0[1-9]|1[0-2])$/, "Month must be in YYYY-MM format"],
     },
     spent: {
       type: Number,

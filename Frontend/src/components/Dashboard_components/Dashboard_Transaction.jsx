@@ -11,14 +11,7 @@ import { useNavigate } from "react-router-dom";
 const URL = import.meta.env.VITE_URL;
 const Dashboard_Transaction = () => {
   const navigate = useNavigate();
-  const [transactions, setTransactions] = useState([{
-      _id: "1",
-      date: "2025-10-12",
-      type : "expense",
-      category: "Food",
-      amount: 450.75,
-      description: "Dinner at restaurant",
-    }]);
+  const [transactions, setTransactions] = useState([]);
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState("desc");
   const [page, setPage] = useState(1);
@@ -30,7 +23,7 @@ const Dashboard_Transaction = () => {
     const getData = async () => {
       try {
         const res = await axios.get(`${URL}/transaction`,{withCredentials : true});
-        // setTransactions(res.data.data || []);
+        setTransactions(res.data.data || []);
       } catch (err) {
         toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
       }
@@ -99,9 +92,9 @@ const Dashboard_Transaction = () => {
   };
   const DeleteData = async (txn) => {
     try {
-      const id = txn._id;
-      const res = await axios.post(`${URL}/transaction/delete`,id,{withCredentials : true});
+      const res = await axios.post(`${URL}/transaction/delete`,{id : txn._id},{withCredentials : true});
       toast.success(res.data.message);
+      setTransactions(prev => prev.filter(t => t._id !== txn._id));
     } catch (err) {
       toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
     }
@@ -183,7 +176,7 @@ const Dashboard_Transaction = () => {
                     {txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
                   </td>
                   <td className="px-4 py-3  text-left font-medium text-gray-100">
-                    ${txn.amount.toLocaleString("en-IN", {
+                    ₹{txn.amount.toLocaleString("en-IN", {
                       minimumFractionDigits: 2,
                     })}
                   </td>

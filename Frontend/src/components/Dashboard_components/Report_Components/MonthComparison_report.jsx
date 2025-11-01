@@ -9,37 +9,26 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { Inbox } from "lucide-react";
 import CustomLineTooltip from "./Customelinetool";
-import CustomTooltip from "./Custometool.jsx";
-const MonthComparisonReport = ({ currentMonthData, previousMonthData }) => {
-  // Default mock data for current and previous months
-  const defaultCurrent = [
-    { category: "Food", amount: 2200 },
-    { category: "Rent", amount: 5000 },
-    { category: "Transport", amount: 1200 },
-    { category: "Entertainment", amount: 900 },
-    { category: "Others", amount: 600 },
-  ];
 
-  const defaultPrevious = [
-    { category: "Food", amount: 1800 },
-    { category: "Rent", amount: 4800 },
-    { category: "Transport", amount: 1000 },
-    { category: "Entertainment", amount: 700 },
-    { category: "Others", amount: 500 },
-  ];
+const MonthComparisonReport = ({ currentMonthData = [], previousMonthData = [] }) => {
+  const chartData = currentMonthData.map((item) => {
+    const prevMatch = previousMonthData.find((p) => p._id === item._id);
+    return {
+      category: item._id || "Unknown",
+      Current: item.totalAmount || 0,
+      Previous: prevMatch ? prevMatch.totalAmount || 0 : 0,
+    };
+  });
 
-  const currentData = currentMonthData?.length ? currentMonthData : defaultCurrent;
-  const previousData = previousMonthData?.length ? previousMonthData : defaultPrevious;
-
-  const chartData = currentData.map((item, index) => ({
-    category: item.category,
-    Current: item.amount,
-    Previous: previousData[index]?.amount || 0,
-  }));
-
-  if (!chartData.length) {
-    return <div className="text-gray-400 text-center py-8">No data available for comparison</div>;
+  if ( !currentMonthData.length || !previousMonthData.length || chartData.every(d => d.Current === 0 && d.Previous === 0)) {
+    return (
+      <div className="bg-[#1f1f1f] rounded-2xl p-6 mt-6 shadow-lg flex flex-col items-center justify-center h-80 text-gray-400">
+        <Inbox size={48} className="mb-4" />
+        <span className="text-lg font-medium">No comparison data available</span>
+      </div>
+    );
   }
 
   return (
@@ -48,17 +37,21 @@ const MonthComparisonReport = ({ currentMonthData, previousMonthData }) => {
         Month Comparison
       </h2>
       <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#444" />
           <XAxis dataKey="category" tick={{ fill: "#ccc", fontSize: 14 }} />
           <YAxis tick={{ fill: "#ccc", fontSize: 14 }} />
           <Tooltip
-            content={<CustomLineTooltip/>}
+            cursor={false}
+            content={<CustomLineTooltip />}
             wrapperStyle={{ backgroundColor: "transparent", border: "none" }}
           />
           <Legend wrapperStyle={{ color: "#fff" }} />
-          <Bar dataKey="Current" fill="#4f9cff" radius={[6, 6, 0, 0]} activeBar={false}/>
-          <Bar dataKey="Previous" fill="#ff6b6b" radius={[6, 6, 0, 0]} activeBar={false}/>
+          <Bar dataKey="Current" fill="#4f9cff" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="Previous" fill="#ff6b6b" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

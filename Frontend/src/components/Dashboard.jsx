@@ -12,7 +12,7 @@ const URL = import.meta.env.VITE_URL;
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false); // sidebar collapsed
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const validateSession = async () => {
@@ -51,16 +51,13 @@ const Dashboard = () => {
   return (
     <div className="bg-[#121212] flex ">
 
-      {/* Collapsible Sidebar */}
       <motion.aside
         animate={{ width: isCollapsed ? 96 : 256 }}
         transition={{ type: 'spring', stiffness: 200, damping: 20 }}
         className="bg-[#1F1F1F] flex flex-col justify-between p-4 shadow-lg
              fixed top-0 left-0 h-screen overflow-hidden"
       >
-        {/* Top section: toggle, logo, menu */}
         <div className="flex flex-col">
-          {/* Toggle button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="mb-6 self-end p-2 rounded-md hover:bg-[#333] transition-colors"
@@ -72,7 +69,6 @@ const Dashboard = () => {
             />
           </button>
 
-          {/* Logo */}
           <div
             className={`flex items-center justify-center mb-10 rounded-2xl text-white font-bold transition-all duration-300
         ${isCollapsed ? 'h-12 text-lg' : 'h-16 text-2xl'}`}
@@ -80,7 +76,6 @@ const Dashboard = () => {
             {!isCollapsed && 'CoinWise'}
           </div>
 
-          {/* Menu (scrollable if needed) */}
           <nav className="flex flex-col gap-4 overflow-hidden max-h-[calc(100vh-200px)]">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -105,7 +100,6 @@ const Dashboard = () => {
           </nav>
         </div>
 
-        {/* Logout Button */}
         <motion.button
           onClick={handleLogout}
           className={`mt-10 flex items-center justify-center gap-7 p-3 rounded-xl font-medium 
@@ -121,9 +115,8 @@ const Dashboard = () => {
         </motion.button>
       </motion.aside>
 
-      {/* Main Content */}
       <motion.main
-        initial={{ marginLeft: isCollapsed ? 96 : 256 }} // start at correct position
+        initial={{ marginLeft: isCollapsed ? 96 : 256 }}
         animate={{ marginLeft: isCollapsed ? 96 : 256 }}
         className="flex-1 p-6 bg-[#121212] pr-5"
       >

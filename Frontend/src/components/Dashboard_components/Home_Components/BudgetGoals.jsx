@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 const URL = import.meta.env.VITE_URL;
 const BudgetGoals = ({isCollapsed}) => {
   const [Budgets,SetBudgets] = useState([]);
-  // {} means storing object [] for array do this [] usually so can use array inbuild function
 
   useEffect(() => {
     const BudgetData = async () => {
@@ -17,7 +16,7 @@ const BudgetGoals = ({isCollapsed}) => {
       }
     }
     BudgetData();
-    const interval = setInterval(BudgetData, 5000); // poll every 5s
+    const interval = setInterval(BudgetData, 5000);
     return () => clearInterval(interval);
   }, [])
   
@@ -40,7 +39,6 @@ const BudgetGoals = ({isCollapsed}) => {
 
         return (
           <div key={index} className="mb-5">
-            {/* Category & amount */}
             <div className="flex justify-between items-center mb-2">
               <span className="text-gray-300 font-medium">{item.category}</span>
               <span className="text-gray-400 text-sm">
@@ -48,9 +46,7 @@ const BudgetGoals = ({isCollapsed}) => {
               </span>
             </div>
 
-            {/* Progress bar background */}
             <div className="w-full h-3 bg-gray-700/30 rounded-full">
-              {/* Progress bar fill */}
               <div
                 className={`h-3 rounded-full ${
                   progress >= 100 ? "bg-red-500" : "bg-blue-600"

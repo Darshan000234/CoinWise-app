@@ -29,7 +29,7 @@ const SignUp_Login = () => {
         });
         if (res.data?.isValid) {
           navigate('/dashboard');
-          return; // stop further execution
+          return;
         }
       } catch (err) {
         if (err.response?.status !== 401) {
@@ -51,11 +51,11 @@ const SignUp_Login = () => {
       try {
         const token = response.access_token;
         const res = await axios.post(`${URL}/user/googleAuth`, { token }, { withCredentials: true });
-        toast.dismiss(); // clear old toasts
+        toast.dismiss();
         toast.success(res.data.message,{duration:3000});
         navigate('/dashboard');
       } catch (err) {
-        toast.dismiss(); // clear old toasts
+        toast.dismiss();
         toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
       }
     },
@@ -112,11 +112,11 @@ const SignUp_Login = () => {
             password: formData.password,
           };
       const res = await axios.post(`${URL}/user/${endpoint}`, payload, { withCredentials: true });
-      toast.dismiss(); // clear old toasts
+      toast.dismiss();
       toast.success(res.data.message,{duration:3000});
       navigate('/dashboard');
     } catch (err) {
-      toast.dismiss(); // clear old toasts
+      toast.dismiss();
       toast.error(err?.response?.data?.message || err.message, { duration: 3000 });
     }
   };
@@ -145,10 +145,8 @@ const SignUp_Login = () => {
           </button>
         </div>
 
-        {/* AnimatePresence for smooth transition */}
         <AnimatePresence mode="wait">
           {Check === 1 ? (
-            /* SIGN UP FORM */
             <motion.form
               key="signup"
               onSubmit={e => handleSubmit(e, 'signup')}
@@ -158,7 +156,6 @@ const SignUp_Login = () => {
               exit="exit"
               className="cursor-pointer space-y-4 flex flex-col items-center justify-center"
             >
-              {/* Full Name */}
               <div className="w-full">
                 <input
                   type="text"
@@ -171,7 +168,6 @@ const SignUp_Login = () => {
                 {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
               </div>
 
-              {/* Email */}
               <div className="w-full">
                 <input
                   type="email"
@@ -184,7 +180,6 @@ const SignUp_Login = () => {
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
 
-              {/* Password */}
               <div className="w-full">
                 <input
                   type="password"
@@ -198,7 +193,6 @@ const SignUp_Login = () => {
                 {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
               </div>
 
-              {/* Confirm Password */}
               <div className="w-full">
                 <input
                   type="password"
@@ -211,7 +205,6 @@ const SignUp_Login = () => {
                 {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
               </div>
 
-              {/* Currency */}
               <select
                 name="currency"
                 value={formData.currency}
@@ -223,7 +216,6 @@ const SignUp_Login = () => {
                 <option value="EUR">EUR €</option>
               </select>
 
-              {/* Monthly Income */}
               <input
                 type="number"
                 name="monthlyIncome"
@@ -233,7 +225,6 @@ const SignUp_Login = () => {
                 className="w-full p-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
               />
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="w-[15rem] py-3 rounded-4xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg hover:from-purple-500 hover:to-blue-500 transform transition-all duration-300 hover:-translate-y-1 cursor-pointer"
@@ -241,14 +232,12 @@ const SignUp_Login = () => {
                 Sign Up
               </button>
 
-              {/* OR Divider */}
               <div className="flex items-center w-full">
                 <div className="flex-1 border-t border-gray-800"></div>
                 <div className="mx-2 text-[18px] font-medium text-gray-600">or</div>
                 <div className="flex-1 border-t border-gray-800"></div>
               </div>
 
-              {/* Google Button */}
               <div
                 onClick={() => loginWithGoogle()}
                 className="flex items-center justify-center px-3 w-80 h-12 gap-2 rounded-3xl bg-[whitesmoke] text-[gray] font-[Roboto] font-medium text-[16px] cursor-pointer transition duration-200 hover:shadow-md active:bg-[#001d35]/10 focus:bg-[#001d35]/10 disabled:bg-white/40 disabled:cursor-default max-w-[400px] min-w-min"
@@ -258,7 +247,6 @@ const SignUp_Login = () => {
               </div>
             </motion.form>
           ) : (
-            /* LOGIN FORM */
             <motion.form
               key="login"
               onSubmit={e => handleSubmit(e, 'login')}
@@ -268,7 +256,6 @@ const SignUp_Login = () => {
               exit="exit"
               className="cursor-pointer space-y-4 flex flex-col items-center justify-center"
             >
-              {/* Email */}
               <div className="w-full">
                 <input
                   type="email"
@@ -281,7 +268,6 @@ const SignUp_Login = () => {
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
 
-              {/* Password */}
               <div className="w-full">
                 <input
                   type="password"
@@ -294,7 +280,6 @@ const SignUp_Login = () => {
                 {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 className="cursor-pointer w-[15rem] py-3 rounded-4xl font-semibold text-white bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg hover:from-purple-500 hover:to-blue-500 transform transition-all duration-300 hover:-translate-y-1"
@@ -302,14 +287,12 @@ const SignUp_Login = () => {
                 Login
               </button>
 
-              {/* OR Divider */}
               <div className="flex items-center w-full">
                 <div className="flex-1 border-t border-gray-800"></div>
                 <div className="mx-2 text-[18px] font-medium text-gray-600">or</div>
                 <div className="flex-1 border-t border-gray-800"></div>
               </div>
 
-              {/* Google Login */}
               <div
                 onClick={() => loginWithGoogle()}
                 className="flex items-center justify-center px-3 w-80 h-12 gap-2 rounded-3xl bg-[whitesmoke] text-[gray] font-[Roboto] font-medium text-[16px] cursor-pointer transition duration-200 hover:shadow-md active:bg-[#001d35]/10 focus:bg-[#001d35]/10 disabled:bg-white/40 disabled:cursor-default max-w-[400px] min-w-min"

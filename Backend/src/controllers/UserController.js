@@ -4,12 +4,10 @@ import { generateToken } from '../utils/JWT.js';
 import axios from 'axios';
 import Transaction from '../models/Transaction.js';
 
-// Sign Up
 export const signUp = async (req, res) => {
     try {
         const { full_name, email, password, currency, monthly_income } = req.body;
 
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
@@ -27,10 +25,10 @@ export const signUp = async (req, res) => {
 
         const token = generateToken(newUser._id, newUser.email);
         res.cookie('token', token, {
-            httpOnly: true,                      // Cannot be accessed by JS
-            secure: process.env.NODE_ENV === 'production', // Only over HTTPS
-            sameSite: 'Strict',                   // Prevent CSRF
-            maxAge: 24 * 60 * 60 * 1000           // 1 day
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 24 * 60 * 60 * 1000
         });
         res.status(201).json({ message: 'SignUp successful' });
     } catch (err) {
@@ -39,7 +37,6 @@ export const signUp = async (req, res) => {
     }
 };
 
-// Login
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -57,10 +54,10 @@ export const login = async (req, res) => {
 
         const token = generateToken(user._id, user.email);
         res.cookie('token', token, {
-            httpOnly: true,                      // Cannot be accessed by JS
-            secure: process.env.NODE_ENV === 'production', // Only over HTTPS
-            sameSite: 'Strict',                   // Prevent CSRF
-            maxAge: 24 * 60 * 60 * 1000           // 1 day
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 24 * 60 * 60 * 1000
         });
         res.json({ message: 'Login successful' });
     } catch (err) {
@@ -69,10 +66,9 @@ export const login = async (req, res) => {
     }
 };
 
-// Google Authentication
 export const googleAuth = async (req, res) => {
     try {
-        const { token } = req.body; // token from frontend
+        const { token } = req.body;
         if (!token) {
             return res.status(400).json({ message: 'Google token is required' });
         }
@@ -95,10 +91,10 @@ export const googleAuth = async (req, res) => {
         }
         const jwtToken = generateToken(user._id, user.email);
         res.cookie('token', jwtToken, {
-            httpOnly: true,                      // Cannot be accessed by JS
-            secure: process.env.NODE_ENV === 'production', // Only over HTTPS
-            sameSite: 'Strict',                   // Prevent CSRF
-            maxAge: 24 * 60 * 60 * 1000           // 1 day
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 24 * 60 * 60 * 1000
         });
         res.status(200).json({ message: message });
     } catch (error) {
@@ -107,7 +103,6 @@ export const googleAuth = async (req, res) => {
     }
 };
 
-// logout
 export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
@@ -122,7 +117,6 @@ export const logout = async (req, res) => {
 };
 
 
-// userData 
 export const Data = async (req, res) => {
   try {
     const id = req.user.id;
@@ -175,9 +169,9 @@ export const Data = async (req, res) => {
       Highest: highestCategory,
     };
 
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch data", error: error.message });
+    return res.status(500).json({ message: "Failed to fetch data", error: error.message });
   }
 };
 
@@ -197,10 +191,10 @@ export const getProfile = async (req, res) => {
                 budgetAlerts: user.notifications.budgetAlerts
             },
             apperance: user.appearance
-        }
-        res.status(200).json({Data});
+        } 
+      res.status(200).json({Data});
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch profile", error: error.message });
+      res.status(500).json({ message: "Failed to fetch profile", error: error.message });
     }
 }
 
@@ -211,6 +205,7 @@ export const updateProfile = async (req, res) => {
 
   try {
     const user = await User.findById(id);
+    console.log('hi');
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

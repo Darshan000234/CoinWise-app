@@ -15,7 +15,6 @@ export const startReportCron = () => {
     },
   });
 
-  // Runs at 8:00 AM on the 1st of every month
   cron.schedule("0 8 1 * *", async () => {
     console.log("Running monthly PDF report job...");
 
@@ -44,7 +43,7 @@ export const startReportCron = () => {
   },{ timezone: "Asia/Kolkata" });
 
   cron.schedule(
-    "0 */6 * * *", // every 6 hours
+    "0 */6 * * *",
     async () => {
       console.log("Checking budgets for alert thresholds...");
       

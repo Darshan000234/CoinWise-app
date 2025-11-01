@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
   },
   password_hash: {
     type: String,
-    default: null, // NULL for Google OAuth users
+    default: null,
   },
   currency: {
     type: String,
@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema({
     default: null,
   },
   profile_picture: {
-    type: String, // store URL or base64 string
+    type: String,
     default: null,
   },
   is_verified: {

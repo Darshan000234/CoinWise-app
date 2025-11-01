@@ -45,11 +45,11 @@ const Dashboard_Home = () => {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    setFile(selected);              // Save file in state
+    setFile(selected);
     if (selected.type.startsWith("image/")) {
-      setPreview(URL.createObjectURL(selected)); // create a preview link for image
+      setPreview(URL.createObjectURL(selected));
     } else {
-      setPreview(null); // No preview for PDFs
+      setPreview(null);
     }
   };
 
@@ -78,7 +78,6 @@ const Dashboard_Home = () => {
         <Notification />
       </div>
       <div className="mt-6 p-4 flex flex-col gap-6">
-        {/* Top 4 summary cards */}
         <div className="flex justify-between gap-4">
           <div className="flex flex-col justify-center rounded-2xl p-4 h-[6rem] w-60 bg-white/5">
             <div className="text-lg text-gray-400">Total Balance</div>
@@ -102,7 +101,6 @@ const Dashboard_Home = () => {
           </div>
         </div>
 
-        {/* Your next container will come here */}
         <div className='flex rounded-2xl bg-white/5 h-full w-full p-4 flex-col justify-start'>
           <div className='flex gap-12'>
             <div>
@@ -112,7 +110,6 @@ const Dashboard_Home = () => {
                   Upload Receipt (Image / PDF)
                 </h2>
 
-                {/* Upload box */}
                 <label className="flex flex-col items-center justify-center w-full h-25 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                   <Upload className="w-10 h-10 text-gray-400 mb-2" />
                   <span className="text-sm text-gray-500">
@@ -126,7 +123,6 @@ const Dashboard_Home = () => {
                   />
                 </label>
 
-                {/* Preview / file info */}
                 {file && (
                   <div className="mt-4 flex items-center gap-4 p-3 bg-gray-50 rounded-lg border">
                     {file.type.startsWith("image/") ? (
@@ -148,7 +144,6 @@ const Dashboard_Home = () => {
                     </div>
                   </div>
                 )}
-                {/* Upload button at the end */}
               {file && (
                 <button
                   onClick={handleUpload}

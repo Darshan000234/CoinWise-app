@@ -54,7 +54,6 @@ const Dashboard_Setting = () => {
     }
   };
 
-  // ✅ Account Deletion Handler
   const handleDeleteAccount = async () => {
     try {
       const section = "account";
@@ -76,7 +75,6 @@ const Dashboard_Setting = () => {
 
   return (
     <div className="flex rounded-2xl bg-white/5 h-full w-full p-4 gap-4 relative">
-      {/* Left Drawer */}
       <div className="w-[15rem] bg-white/5 rounded-2xl p-5 flex flex-col space-y-2 gap-3 h-[23rem] pt-10">
         {tabs.map((tab) => (
           <button
@@ -95,7 +93,6 @@ const Dashboard_Setting = () => {
         ))}
       </div>
 
-      {/* Right Content */}
       <motion.div
         key={activeTab}
         initial={{ opacity: 0, x: 40 }}
@@ -103,7 +100,6 @@ const Dashboard_Setting = () => {
         transition={{ duration: 0.3 }}
         className="flex-1 bg-white/5 rounded-2xl p-6 overflow-y-auto"
       >
-        {/* Profile */}
         {activeTab === "profile" && (
           <div>
             <h2 className="text-xl font-semibold mb-4">Profile Settings</h2>
@@ -146,7 +142,6 @@ const Dashboard_Setting = () => {
           </div>
         )}
 
-        {/* Notifications */}
         {activeTab === "notifications" && (
           <div>
             <h2 className="text-xl font-semibold mb-4">
@@ -188,7 +183,6 @@ const Dashboard_Setting = () => {
           </div>
         )}
 
-        {/* Security */}
         {activeTab === "security" && (
           <div>
             <h2 className="text-xl font-semibold mb-4">Security</h2>
@@ -217,7 +211,6 @@ const Dashboard_Setting = () => {
           </div>
         )}
 
-        {/* Account */}
         {activeTab === "account" && (
           <div>
             <h2 className="text-xl font-semibold mb-4 text-red-400">
@@ -237,7 +230,6 @@ const Dashboard_Setting = () => {
         )}
       </motion.div>
 
-      {/* ✅ Confirm Delete Popup */}
       <AnimatePresence>
         {confirmOpen && (
           <motion.div

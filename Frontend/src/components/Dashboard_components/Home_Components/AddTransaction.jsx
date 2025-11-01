@@ -21,15 +21,15 @@ const AddTransaction = ({txn,onClose}) => {
     notes: txn.description || '-'
   });
   const [value,setValue] = useState((txn === undefined ? '':"Update"));
-  const [customCategory, setCustomCategory] = useState(""); // NEW state
+  const [customCategory, setCustomCategory] = useState("");
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const categories = [
+    "Groceries",
     "Food",
     "Shopping",
     "Transport",
-    "Salary",
     "Rent",
     "Entertainment",
     "Health",
@@ -45,7 +45,7 @@ const AddTransaction = ({txn,onClose}) => {
 
   const handleCategorySelect = (cat) => {
     setForm((prev) => ({ ...prev, category: cat }));
-    setCustomCategory(""); // clear custom when dropdown is selected
+    setCustomCategory("");
     setOpen(false);
   };
 
@@ -96,7 +96,6 @@ const AddTransaction = ({txn,onClose}) => {
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Date */}
         <input
           type="date"
           name="date"
@@ -105,7 +104,6 @@ const AddTransaction = ({txn,onClose}) => {
           className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 custom-date"
         />
 
-        {/* Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Amount
@@ -119,7 +117,6 @@ const AddTransaction = ({txn,onClose}) => {
               name="amount"
               value={form.amount}
               onChange={(e) => {
-                // Only allow numbers
                 const value = e.target.value.replace(/[^0-9.]/g, '');
                 setForm({ ...form, amount: value });
               }}
@@ -130,7 +127,6 @@ const AddTransaction = ({txn,onClose}) => {
           </div>
         </div>
 
-        {/* Category Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Select Category
@@ -166,7 +162,6 @@ const AddTransaction = ({txn,onClose}) => {
           )}
         </div>
 
-        {/* Custom Category */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Or Write Your Own Category
@@ -180,7 +175,6 @@ const AddTransaction = ({txn,onClose}) => {
           />
         </div>
 
-        {/* Type */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Type
@@ -217,7 +211,6 @@ const AddTransaction = ({txn,onClose}) => {
           </div>
         </div>
 
-        {/* Notes */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Notes
@@ -232,7 +225,6 @@ const AddTransaction = ({txn,onClose}) => {
           />
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition text-lg"

@@ -3,20 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, Pagination } from "@mui/material";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Edit, Delete, Wallet, Search } from "lucide-react"; // ✅ Added icons
+import { Edit, Delete, Wallet, Search } from "lucide-react";
 import AddBudget from "./AddBudget";
 
 const URL = import.meta.env.VITE_URL;
 
 const AllBudget = () => {
-  const [budgets, setBudgets] = useState([
-    { category: "Food", limit: 5000, spent: 4200, month: "October 2025" },
-    { category: "Transport", limit: 2000, spent: 1800, month: "October 2025" },
-    { category: "Shopping", limit: 3000, spent: 2500, month: "October 2025" },
-    { category: "Entertainment", limit: 2500, spent: 1900, month: "October 2025" },
-    { category: "Health", limit: 4000, spent: 1500, month: "October 2025" },
-    { category: "Education", limit: 3500, spent: 3400, month: "October 2025" },
-  ]);
+  const [budgets, setBudgets] = useState([]);
 
   const [query, setQuery] = useState("");
   const [sortField, setSortField] = useState("month");
@@ -30,7 +23,7 @@ const AllBudget = () => {
     const getBudgets = async () => {
       try {
         const res = await axios.get(`${URL}/budget/data`, { withCredentials: true });
-        // setBudgets(res.data.data || []);
+        setBudgets(res.data.data || []);
       } catch (err) {
         toast.error(err?.response?.data?.message || err.message);
       }
@@ -79,13 +72,11 @@ const AllBudget = () => {
 
   return (
     <div className="p-6 text-white min-h-screen w-full bg-[#262626] rounded-3xl flex flex-col">
-      {/* Title with Wallet Icon */}
       <div className="flex items-center justify-center gap-2 mb-6">
         <Wallet className="w-7 h-7 text-blue-400" />
         <h2 className="text-3xl font-semibold text-center">All Budgets</h2>
       </div>
 
-      {/* Search */}
       <div className="mb-6 flex justify-center">
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -99,7 +90,6 @@ const AllBudget = () => {
         </div>
       </div>
 
-      {/* Budget Cards */}
       <div className="flex flex-col gap-4 w-full max-w-5xl mx-auto">
         <AnimatePresence>
           {paginated.length > 0 ? (
@@ -121,7 +111,6 @@ const AllBudget = () => {
                     <span className="text-sm text-gray-400">{b.month}</span>
                   </div>
 
-                  {/* Progress Bar */}
                   <div className="flex items-center gap-3 mt-2">
                     <div className="relative flex-grow h-3 rounded-full bg-[#333] overflow-hidden">
                       <motion.div
@@ -145,7 +134,6 @@ const AllBudget = () => {
                     <span className="text-sm text-gray-300 font-medium">{percent.toFixed(0)}%</span>
                   </div>
 
-                  {/* Amount Info */}
                   <div className="flex justify-between text-sm mt-3">
                     <span className="text-gray-400">
                       Limit: ₹{b.limit.toLocaleString("en-IN")}
@@ -158,7 +146,6 @@ const AllBudget = () => {
                     </span>
                   </div>
 
-                  {/* Hover Icons */}
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-3">
                     <Edit
                       className="w-5 h-5 text-blue-400 cursor-pointer hover:text-blue-300"
@@ -178,7 +165,6 @@ const AllBudget = () => {
         </AnimatePresence>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <Pagination
@@ -194,7 +180,6 @@ const AllBudget = () => {
         </div>
       )}
 
-      {/* Popup */}
       <AnimatePresence>
         {isPopupOpen && (
           <Dialog

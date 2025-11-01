@@ -1,35 +1,32 @@
-import axios from "axios";
 import Transaction from "../models/Transaction.js";
+import mongoose from "mongoose";
 import User from "../models/User.js";
-import { Data } from "../controllers/UserController.js";
 import Report from "../models/Report.js";
 import { generatePdfWithPuppeteer } from "../utils/pdfGenerator.js";
 import Notification from "../models/Notification.js";
 
-const URL = process.env.URL;
-
 const getDateRange = (type, range) => {
   if (!type || !range) return { start: null, end: null };
+
   if (type === "month") {
     const [year, month] = range.split("-");
-    const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0, 23, 59, 59, 999);
-    return { start: firstDay, end: lastDay };
+    const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    return { start, end };
   }
 
-  // Week type (YYYY-Wxx)
   if (type === "week") {
     const base = new Date(range);
-    const day = base.getDay(); // 0=Sun, 1=Mon, ...
+    const day = base.getUTCDay();
     const diffToMonday = (day + 6) % 7;
 
     const monday = new Date(base);
-    monday.setDate(base.getDate() - diffToMonday);
-    monday.setHours(0, 0, 0, 0);
+    monday.setUTCDate(base.getUTCDate() - diffToMonday);
+    monday.setUTCHours(0, 0, 0, 0);
 
     const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    sunday.setHours(23, 59, 59, 999);
+    sunday.setUTCDate(monday.getUTCDate() + 6);
+    sunday.setUTCHours(23, 59, 59, 999);
 
     return { start: monday, end: sunday };
   }
@@ -37,7 +34,6 @@ const getDateRange = (type, range) => {
   return { start: null, end: null };
 };
 
-// BAR API
 export const bar = async (req, res) => {
   const id = req.user.id;
   const { type, range } = req.query;
@@ -62,47 +58,61 @@ export const bar = async (req, res) => {
     const total = (userData?.monthly_income || 0) + income;
     const saved = total - expense;
 
-    res.status(200).json({ totalSpent: expense, totalSaved: saved });
+    return res.status(200).json({ totalSpent: expense, totalSaved: saved });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 
-// PIE API
 export const pie = async (req, res) => {
   const { type, range } = req.query;
+  const userId = req.user.id;
 
   try {
     const { start, end } = getDateRange(type, range);
     if (!start || !end) {
       return res.status(200).json({ categoryData: [] });
     }
-    let result;
-    try {
-      result = await axios.get(
-        `${URL}/transaction/category?start=${start.toISOString()}&end=${end.toISOString()}`,
-        { withCredentials: true }
-      );
-    } catch (innerErr) {
-      console.log("Error from /transaction/category:", innerErr.message);
-      return res.status(200).json({ categoryData: [] });
-    }
+    const categoryData = await Transaction.aggregate([
+      {
+        $match: {
+          user_id: new mongoose.Types.ObjectId(userId),
+          date: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $project: {
+          categoryLower: { $toLower: "$category" },
+          amount: 1,
+          type: 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$categoryLower",
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+      {
+        $sort: { totalAmount: -1 },
+      },
+    ]);
 
-    if (!result.data?.data || result.data.data.length === 0) {
-      return res.status(200).json({ message: "No category data found for the selected range." });
+    if (!categoryData || categoryData.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "No category data found for the selected range." });
     }
-
-    res.status(200).json({ categoryData: result.data.data });
+    return res.status(200).json({ categoryData });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error generating pie data:", err);
+    if (!res.headersSent) return res.status(500).json({ error: err.message });
   }
 };
 
-// LINE API
 export const line = async (req, res) => {
   const id = req.user.id;
   const { type, range } = req.query;
-  console.log(id);
   try {
     const { start, end } = getDateRange(type, range);
     if (!start || !end) {
@@ -125,49 +135,101 @@ export const line = async (req, res) => {
     });
 
     const dailyData = Object.entries(dailySpend).map(([date, amount]) => ({ date, amount }));
-    res.status(200).json({ dailyData });
+    return res.status(200).json({ dailyData });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
-
 
 export const data = async (req, res) => {
   try {
     const id = req.user.id;
+    const user = await User.findById(id);
+    const baseIncome = user?.monthly_income ?? 0;
+
     const currentDate = new Date();
-    const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    const categoryData = await Transaction.aggregate([
-      { $match: { user_id: id, date: { $gte: start, $lte: end } } },
-      { $group: { _id: "$category", totalAmount: { $sum: "$amount" } } },
-      { $sort: { totalAmount: -1 } },
+
+    const currStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const currEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const prevStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    const prevEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+
+    const [currTx, prevTx] = await Promise.all([
+      Transaction.find({ user_id: id, date: { $gte: currStart, $lte: currEnd } }),
+      Transaction.find({ user_id: id, date: { $gte: prevStart, $lte: prevEnd } }),
     ]);
-    const prevMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    const prevMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-    const prevCategoryData = await Transaction.aggregate([
-      { $match: { user_id: id, date: { $gte: prevMonthStart, $lte: prevMonthEnd } } },
-      { $group: { _id: "$category", totalAmount: { $sum: "$amount" } } },
+
+    const getSummary = (txList, baseIncomeValue) => {
+      const incomeTx = txList.filter(t => t.type === "income");
+      const expenseTx = txList.filter(t => t.type === "expense");
+
+      const totalIncome = baseIncomeValue + incomeTx.reduce((s, t) => s + t.amount, 0);
+      const totalExpense = expenseTx.reduce((s, t) => s + t.amount, 0);
+
+      const categoryTotals = {};
+      expenseTx.forEach(t => {
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+      });
+
+      const highestCategory =
+        Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+      return {
+        monthly_income: totalIncome.toFixed(2),
+        Expenses: totalExpense.toFixed(2),
+        Net_Saving: (totalIncome - totalExpense).toFixed(2),
+        Average: expenseTx.length ? (totalExpense / expenseTx.length).toFixed(2) : "0",
+        Highest: highestCategory,
+        categoryTotals,
+      };
+    };
+
+    const currentSummary = getSummary(currTx, baseIncome);
+    const previousSummary = getSummary(prevTx, baseIncome);
+
+    const [currCategoryData, prevCategoryData] = await Promise.all([
+      Transaction.aggregate([
+        {
+          $match: {
+            user_id: new mongoose.Types.ObjectId(id),
+            date: { $gte: currStart, $lte: currEnd },
+          },
+        },
+        { $group: { _id: "$category", totalAmount: { $sum: "$amount" } } },
+        { $sort: { totalAmount: -1 } },
+      ]),
+      Transaction.aggregate([
+        {
+          $match: {
+            user_id: new mongoose.Types.ObjectId(id),
+            date: { $gte: prevStart, $lte: prevEnd },
+          },
+        },
+        { $group: { _id: "$category", totalAmount: { $sum: "$amount" } } },
+        { $sort: { totalAmount: -1 } },
+      ]),
     ]);
-    const prevUserData = await Data({ ...req, query: { prev: "0" } }, res); // simulate internal call
+
     const result = {
-      current : {
-        categoryData,
-        Highest_category: categoryData[0] || null,
+      current: {
+        summary: currentSummary,
+        categoryData: currCategoryData,
+        Highest_category: currCategoryData[0]?._id || "N/A",
       },
-      previous : {
-        categoryData : prevCategoryData,
-        income: prevUserData.monthly_income,
-        Expenses: prevUserData.Expenses,
-        netSaving: prevUserData.Net_Saving,
-      }
+      previous: {
+        summary: previousSummary,
+        categoryData: prevCategoryData,
+        Highest_category: prevCategoryData[0]?._id || "N/A",
+      },
     };
 
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error in data API:", error);
+    res.status(500).json({ message: "Failed to fetch report data", error: error.message });
   }
 };
+
 
 export const save = async (req, res) => {
   try {

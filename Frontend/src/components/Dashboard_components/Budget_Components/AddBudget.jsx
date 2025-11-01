@@ -110,7 +110,6 @@ const AddBudget = ({ budget, onClose }) => {
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Date */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Select Month
@@ -124,7 +123,6 @@ const AddBudget = ({ budget, onClose }) => {
           />
         </div>
 
-        {/* Category Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Select Category
@@ -160,7 +158,6 @@ const AddBudget = ({ budget, onClose }) => {
           )}
         </div>
 
-        {/* Custom Category */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Or Write Your Own Category
@@ -174,7 +171,6 @@ const AddBudget = ({ budget, onClose }) => {
           />
         </div>
 
-        {/* Budget Limit */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Budget Limit (₹)
@@ -198,7 +194,6 @@ const AddBudget = ({ budget, onClose }) => {
           </div>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition text-lg"

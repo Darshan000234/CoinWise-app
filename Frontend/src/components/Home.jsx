@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom';
 
 const Home = () => {
     useEffect(() => {
-        // Only use AOS for sections outside Features/Sign-up
         AOS.init({ duration: 1000, once: true });
     }, []);
 
@@ -62,7 +61,6 @@ const Home = () => {
                     Features
                 </h1>
 
-                {/* Grid layout for feature cards */}
                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 justify-items-center'>
                     {[{
                         img: clipboard,
@@ -86,24 +84,20 @@ const Home = () => {
                             className='group relative p-8 border border-gray-700 rounded-2xl w-64 min-h-[18rem] bg-gray-900 shadow-md
                    transform transition-all duration-500 ease-in-out hover:-translate-y-2 hover:shadow-2xl'
                         >
-                            {/* Icon */}
                             <div className='flex justify-center mb-6'>
                                 <div className='p-4 bg-gray-800 rounded-full shadow-inner transition-transform duration-500 group-hover:scale-110'>
                                     <img src={feature.img} className="w-12 h-12" alt={feature.title} />
                                 </div>
                             </div>
 
-                            {/* Title */}
                             <h2 className="text-xl font-semibold text-center text-white mb-3">
                                 {feature.title}
                             </h2>
 
-                            {/* Description */}
                             <p className='text-gray-400 text-center text-base leading-relaxed'>
                                 {feature.desc}
                             </p>
 
-                            {/* Bottom subtle glow */}
                             <div className='absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2/3 h-1 
                         bg-gradient-to-r from-[#00d4ff] to-[#9b59b6] opacity-0 group-hover:opacity-100 
                         transition-opacity duration-500 rounded-full'></div>
