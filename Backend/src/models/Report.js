@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const ReportSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  full_name: { type: String},
   month: { type: String, required: true },
   data: { type: Object, required: true },
   charts: [{ name: String, dataUrl: String }],

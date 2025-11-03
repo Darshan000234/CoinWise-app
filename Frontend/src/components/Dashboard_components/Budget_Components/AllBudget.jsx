@@ -8,8 +8,8 @@ import AddBudget from "./AddBudget";
 
 const URL = import.meta.env.VITE_URL;
 
-const AllBudget = () => {
-  const [budgets, setBudgets] = useState([]);
+const AllBudget = ({budget}) => {
+  const [budgets, setBudgets] = useState(budget || []);
 
   const [query, setQuery] = useState("");
   const [sortField, setSortField] = useState("month");
@@ -19,17 +19,7 @@ const AllBudget = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const itemsPerPage = 6;
 
-  useEffect(() => {
-    const getBudgets = async () => {
-      try {
-        const res = await axios.get(`${URL}/budget/data`, { withCredentials: true });
-        setBudgets(res.data.data || []);
-      } catch (err) {
-        toast.error(err?.response?.data?.message || err.message);
-      }
-    };
-    getBudgets();
-  }, []);
+  
 
   const filtered = budgets.filter(
     (b) =>
@@ -71,7 +61,7 @@ const AllBudget = () => {
   };
 
   return (
-    <div className="p-6 text-white min-h-screen w-full bg-[#262626] rounded-3xl flex flex-col">
+    <div className="p-6 text-white  w-full bg-[#262626] rounded-3xl flex flex-col">
       <div className="flex items-center justify-center gap-2 mb-6">
         <Wallet className="w-7 h-7 text-blue-400" />
         <h2 className="text-3xl font-semibold text-center">All Budgets</h2>

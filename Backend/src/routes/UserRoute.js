@@ -8,8 +8,7 @@ router.post('/login',UserController.login);
 router.post('/googleAuth',UserController.googleAuth);
 router.get('/validate-session', isloggedIn.authMiddleware, (req, res) => {
   res.json({
-    isValid: true,
-    user: req.user
+    isValid: true
   });
 });
 router.get('/getdata',isloggedIn.authMiddleware,UserController.Data);

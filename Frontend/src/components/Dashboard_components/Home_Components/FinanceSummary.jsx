@@ -132,7 +132,7 @@ const FinanceSummary = ({ isCollapsed, userId }) => {
         style={{ width: isCollapsed ? "1350px" : "1250px" }}
       >
         <h2 className="text-3xl font-bold text-white mb-6 text-center">
-          Category-wise Spending This Month
+          Category-wise Spending 
         </h2>
         <div className="flex-1">
           <Line data={lineData} options={options} />

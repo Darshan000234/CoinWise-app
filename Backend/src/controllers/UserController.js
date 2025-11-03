@@ -121,7 +121,7 @@ export const Data = async (req, res) => {
   try {
     const id = req.user.id;
     const { prev } = req.query;
-
+    // console.log(id);
     const currentDate = new Date();
     const monthOffset = prev !== undefined ? 1 : 0;
 
@@ -129,6 +129,10 @@ export const Data = async (req, res) => {
     const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - monthOffset + 1, 0);
 
     const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     const baseIncome = user?.monthly_income ?? 0;
 
     const transactions = await Transaction.find({
@@ -137,7 +141,7 @@ export const Data = async (req, res) => {
     });
 
     let data = {
-      user_id : id,
+      _id: id,
       monthly_income: baseIncome.toFixed(2),
       Expenses: "0",
       Net_Saving: baseIncome.toFixed(2),
@@ -145,7 +149,9 @@ export const Data = async (req, res) => {
       Highest: "N/A",
     };
 
-    if (transactions.length === 0) return res.status(200).json(data);
+    if (transactions.length === 0) {
+      return res.status(200).json(data);
+    }
 
     const incomeTx = transactions.filter(t => t.type === "income");
     const expenseTx = transactions.filter(t => t.type === "expense");
@@ -162,18 +168,21 @@ export const Data = async (req, res) => {
       Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "0";
 
     data = {
+      _id: id, // ✅ added back
+      full_name: user.full_name,
       monthly_income: totalIncome.toFixed(2),
       Expenses: totalExpense.toFixed(2),
       Net_Saving: (totalIncome - totalExpense).toFixed(2),
       Average: expenseTx.length ? (totalExpense / expenseTx.length).toFixed(2) : "0",
       Highest: highestCategory,
     };
-
+    console.log(data);
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch data", error: error.message });
   }
 };
+
 
 export const getProfile = async (req, res) => {
     const id = req.user.id;
@@ -186,8 +195,8 @@ export const getProfile = async (req, res) => {
                 monthly_income: user.monthly_income
             },
             notifications:{
-                MonthlyReport: user.notifications.monthlyReport,
-                Download: user.notifications.download,
+                monthlyReport: user.notifications.monthlyReport,
+                download: user.notifications.download,
                 budgetAlerts: user.notifications.budgetAlerts
             },
             apperance: user.appearance
@@ -217,7 +226,8 @@ export const updateProfile = async (req, res) => {
         if (data.email) user.email = data.email;
         break;
       case "notifications":
-        user.notifications = { ...user.notifications, ...data };
+        user.notifications = data;
+        console.log(user.notifications);
         break;
       case "security":
         const {Current_Password,New_Password} = data;

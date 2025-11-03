@@ -12,7 +12,7 @@ export async function generatePdfWithPuppeteer(report) {
   const templatePath = path.join(VIEWS_DIR, "reportTemplate.ejs");
 
   const templateData = {
-    name: report.userId?.name || "User",
+    name: report.full_name || "User",
     month: report.month,
     totalIncome: report.data?.totalIncome || 0,
     totalSpend: report.data?.totalSpend || 0,

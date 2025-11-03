@@ -22,30 +22,17 @@ const Dashboard_Reports = () => {
           withCredentials: true,
         });
         setUser(userRes.data);
-
         const reportRes = await axios.get(`${URL}/dashboard/report/data`, {
           withCredentials: true,
         });
         const data = reportRes.data;
         setReportData(data);
-
-        if (data?.current?.summary) {
-          setUser((prev) => ({
-            ...prev,
-            monthly_income: data.current.summary.monthly_income,
-            Expenses: data.current.summary.Expenses,
-            Net_Saving: data.current.summary.Net_Saving,
-            Average: data.current.summary.Average,
-            Highest: data.current.summary.Highest,
-          }));
-        }
       } catch (err) {
         toast.error(err?.response?.data?.message || err.message, {
           duration: 3000,
         });
       }
     };
-
     const validateSession = async () => {
       try {
         const res = await axios.get(`${URL}/user/validate-session`, { withCredentials: true });
@@ -60,7 +47,10 @@ const Dashboard_Reports = () => {
   }, []);
 
   const handleGeneratePDF = async () => {
-    if (!reportData || !user?._id) {
+    if (!reportData ||
+        !reportData.current ||
+        !reportData.previous ||
+        !user?._id) {
       toast.error("Report data not ready");
       return;
     }
@@ -75,14 +65,19 @@ const Dashboard_Reports = () => {
           };
         })
         .filter(Boolean);
-
+      reportData.current.summary.categoryData = reportData.current.categoryData;
+      reportData.previous.summary.categoryData = reportData.previous.categoryData;
+      // console.log(reportData);
+      
       const insights = generateInsights(
         reportData.current.summary,
         reportData.previous.summary
       );
-
+      
+      // console.log("ok");
       const payload = {
         userId: user._id,
+        full_name: user.full_name,
         month: new Date().toISOString().slice(0, 7),
         data: {
           totalIncome: Number(reportData.current.summary.monthly_income),
@@ -96,17 +91,17 @@ const Dashboard_Reports = () => {
         },
         charts: chartImages,
       };
-
+      // console.log("ok1");
       const saveRes = await axios.post(`${URL}/dashboard/report/save`, payload, {
         withCredentials: true,
       });
       const reportId = saveRes.data.reportId;
-
-      const genRes = await axios.post(
+      // console.log("ok2",reportData);
+      const genRes = await axios.get(
         `${URL}/dashboard/report/generate/${reportId}`,
-        {},
         { withCredentials: true }
       );
+      console.log("ok");
       const downloadUrl = `${URL}${genRes.data.downloadUrl}`;
       toast.success("PDF generated successfully!");
       window.open(downloadUrl, "_blank");

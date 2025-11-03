@@ -54,7 +54,7 @@ const Monthweek_report = ({ chartRefs }) => {
         setPieData(pieRes.data || {});
         setBarData(barRes.data || {});
         setLineData(lineRes.data || {});
-        console.log(pieRes.data);
+        // console.log(pieRes.data);
       } catch (err) {
         console.log(err.message);
       }

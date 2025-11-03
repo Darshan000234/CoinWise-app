@@ -15,7 +15,11 @@ const Dashboard_Setting = () => {
   const [notifications, setNotifications] = useState({});
   const [password, setPassword] = useState({});
   const [confirmOpen, setConfirmOpen] = useState(false);
-
+  const setters = {
+    profile: setProfile,
+    notifications: setNotifications,
+    security: setPassword,  
+  }
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -24,6 +28,7 @@ const Dashboard_Setting = () => {
         });
         setProfile(response.data.Data.profile || {});
         setNotifications(response.data.Data.notifications || {});
+        // console.log(response.data.Data.notifications);
       } catch (err) {
         toast.error("Failed to load settings");
       }
@@ -42,6 +47,8 @@ const Dashboard_Setting = () => {
 
   
   const handleSave = async (section, data) => {
+    setters[section](data);
+    console.log(data);
     try {
       await axios.post(
         `${URL}/user/settings_update/${section}`,

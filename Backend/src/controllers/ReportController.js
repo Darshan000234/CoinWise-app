@@ -233,9 +233,10 @@ export const data = async (req, res) => {
 
 export const save = async (req, res) => {
   try {
-    const { userId, month, data, charts } = req.body;
+    const { userId, full_name, month, data, charts } = req.body;
     const newReport = new Report({
       userId,
+      full_name,
       month,
       data,
       charts,
@@ -250,17 +251,20 @@ export const save = async (req, res) => {
 
 export const generate = async (req, res) => {
   try {
-    const report = await Report.findById(req.params.id).populate("userId", "name email");
-
+    console.log(req.params.id);
+    const report = await Report.findById(req.params.id);
     if (!report) return res.status(404).json({ error: "Report not found" });
+    console.log(report);
     const pdfPath = await generatePdfWithPuppeteer(report);
+    console.log("all right");
     report.pdfPath = pdfPath;
     report.generatedAt = new Date();
     await report.save();
+    console.log("end");
     res.status(200).json({ downloadUrl: `/reports/download/${report._id}` });
   } catch (err) {
     console.error("Error generating PDF:", err);
-    res.status(500).json({ error: "Failed to generate PDF" });
+    res.status(500).json({ error: "Failed to generate PDF1" });
   }
 }
 
