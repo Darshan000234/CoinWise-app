@@ -121,7 +121,6 @@ export const Data = async (req, res) => {
   try {
     const id = req.user.id;
     const { prev } = req.query;
-    // console.log(id);
     const currentDate = new Date();
     const monthOffset = prev !== undefined ? 1 : 0;
 
@@ -168,7 +167,7 @@ export const Data = async (req, res) => {
       Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "0";
 
     data = {
-      _id: id, // ✅ added back
+      _id: id,
       full_name: user.full_name,
       monthly_income: totalIncome.toFixed(2),
       Expenses: totalExpense.toFixed(2),

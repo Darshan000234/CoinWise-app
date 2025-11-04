@@ -51,6 +51,32 @@ body{
   filter: invert(1);
 }
 
+/* Scrollbar Styling for Notification Dropdown */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #1a1a1a; /* Match dropdown background */
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #333; /* Dark gray thumb for visibility */
+  border-radius: 10px;
+  transition: background 0.2s ease-in-out;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Slightly lighter on hover */
+}
+
+/* For Firefox */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #333 #1a1a1a;
+}
+
 
 @keyframes modalOpen {
   0% {

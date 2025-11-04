@@ -16,6 +16,7 @@ const Dashboard_Home = () => {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [user, setUser] = useState({});
+
   useEffect(() => {
     const getData = async () => {
       try {
@@ -40,7 +41,7 @@ const Dashboard_Home = () => {
     };
     validateSession();
   }, []);
-
+  
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (!selected) return;

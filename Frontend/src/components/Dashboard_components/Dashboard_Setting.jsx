@@ -28,7 +28,6 @@ const Dashboard_Setting = () => {
         });
         setProfile(response.data.Data.profile || {});
         setNotifications(response.data.Data.notifications || {});
-        // console.log(response.data.Data.notifications);
       } catch (err) {
         toast.error("Failed to load settings");
       }

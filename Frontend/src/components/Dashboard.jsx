@@ -49,7 +49,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="bg-[#121212] flex ">
+    <div className="bg-[#121212] flex">
 
       <motion.aside
         animate={{ width: isCollapsed ? 96 : 256 }}

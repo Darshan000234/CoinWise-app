@@ -4,6 +4,9 @@ import User from "../models/User.js";
 import Report from "../models/Report.js";
 import { generatePdfWithPuppeteer } from "../utils/pdfGenerator.js";
 import Notification from "../models/Notification.js";
+import path from 'path';
+import fs from 'fs';
+
 
 const getDateRange = (type, range) => {
   if (!type || !range) return { start: null, end: null };
@@ -230,7 +233,6 @@ export const data = async (req, res) => {
   }
 };
 
-
 export const save = async (req, res) => {
   try {
     const { userId, full_name, month, data, charts } = req.body;
@@ -254,14 +256,12 @@ export const generate = async (req, res) => {
     console.log(req.params.id);
     const report = await Report.findById(req.params.id);
     if (!report) return res.status(404).json({ error: "Report not found" });
-    console.log(report);
     const pdfPath = await generatePdfWithPuppeteer(report);
-    console.log("all right");
+    // console.log(report.charts);
     report.pdfPath = pdfPath;
     report.generatedAt = new Date();
     await report.save();
-    console.log("end");
-    res.status(200).json({ downloadUrl: `/reports/download/${report._id}` });
+    res.status(200).json({ downloadUrl: `/dashboard/report/download/${report._id}` });
   } catch (err) {
     console.error("Error generating PDF:", err);
     res.status(500).json({ error: "Failed to generate PDF1" });
@@ -269,17 +269,29 @@ export const generate = async (req, res) => {
 }
 
 export const download = async (req, res) => {
+  const id = req.user.id;
   try {
     const report = await Report.findById(req.params.id);
-
     if (!report?.pdfPath) {
       return res.status(404).json({ error: "PDF not found" });
     }
-    await Notification.create({
-      user_id: report.userId,
-      message: `Your report for ${report.month}  was downloaded.`,
-    });
-    res.download(report.pdfPath);
+
+    const pdfPath = path.resolve(report.pdfPath);
+    if (!fs.existsSync(pdfPath)) {
+      console.error('PDF file missing at path:', pdfPath);
+      return res.status(404).json({ error: "PDF file not found on disk" });
+    }
+    const user = await User.findById(id);
+    if(user.notifications.download===true){
+      await Notification.create({
+        user_id: report.userId,
+        message: `Your report for ${report.month} was downloaded.`,
+      });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=report_${report._id}.pdf`);
+    return res.download(pdfPath);
   } catch (err) {
     console.error("Error downloading PDF:", err);
     res.status(500).json({ error: "Failed to download PDF" });

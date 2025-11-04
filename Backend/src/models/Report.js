@@ -5,7 +5,6 @@ const ReportSchema = new mongoose.Schema({
   full_name: { type: String},
   month: { type: String, required: true },
   data: { type: Object, required: true },
-  charts: [{ name: String, dataUrl: String }],
   pdfPath: { type: String },
   generatedAt: { type: Date },
   emailedAt: { type: Date },

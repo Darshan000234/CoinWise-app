@@ -6,7 +6,7 @@ import { generateInsights } from "./Report_Components/generateInsights";
 import MonthComparison_report from "./Report_Components/MonthComparison_report";
 import { useNavigate } from "react-router-dom";
 
-const URL = import.meta.env.VITE_URL;
+const BASE_URL = import.meta.env.VITE_URL;
 
 const Dashboard_Reports = () => {
   const navigate = useNavigate();
@@ -18,63 +18,53 @@ const Dashboard_Reports = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const userRes = await axios.get(`${URL}/user/getdata`, {
+        const userRes = await axios.get(`${BASE_URL}/user/getdata`, {
           withCredentials: true,
         });
         setUser(userRes.data);
-        const reportRes = await axios.get(`${URL}/dashboard/report/data`, {
+        const reportRes = await axios.get(`${BASE_URL}/dashboard/report/data`, {
           withCredentials: true,
         });
-        const data = reportRes.data;
-        setReportData(data);
+        setReportData(reportRes.data);
       } catch (err) {
         toast.error(err?.response?.data?.message || err.message, {
           duration: 3000,
         });
       }
     };
+
     const validateSession = async () => {
       try {
-        const res = await axios.get(`${URL}/user/validate-session`, { withCredentials: true });
-        if (!res.data.isValid) navigate('/');
+        const res = await axios.get(`${BASE_URL}/user/validate-session`, {
+          withCredentials: true,
+        });
+        if (!res.data.isValid) navigate("/");
         else getData();
       } catch {
-        navigate('/');
+        navigate("/");
       }
     };
 
     validateSession();
   }, []);
 
+
   const handleGeneratePDF = async () => {
-    if (!reportData ||
-        !reportData.current ||
-        !reportData.previous ||
-        !user?._id) {
+    if (!reportData || !reportData.current || !reportData.previous || !user?._id) {
       toast.error("Report data not ready");
       return;
     }
+
     try {
-      const chartImages = chartRefs
-        .map((ref, i) => {
-          const canvas = ref.current?.querySelector("canvas");
-          if (!canvas) return null;
-          return {
-            name: `chart_${i + 1}`,
-            dataUrl: canvas.toDataURL("image/png"),
-          };
-        })
-        .filter(Boolean);
+
       reportData.current.summary.categoryData = reportData.current.categoryData;
       reportData.previous.summary.categoryData = reportData.previous.categoryData;
-      // console.log(reportData);
-      
+
       const insights = generateInsights(
         reportData.current.summary,
         reportData.previous.summary
       );
-      
-      // console.log("ok");
+
       const payload = {
         userId: user._id,
         full_name: user.full_name,
@@ -89,22 +79,23 @@ const Dashboard_Reports = () => {
           categoryData: reportData.current.categoryData ?? [],
           insight: insights,
         },
-        charts: chartImages,
       };
-      // console.log("ok1");
-      const saveRes = await axios.post(`${URL}/dashboard/report/save`, payload, {
-        withCredentials: true,
-      });
-      const reportId = saveRes.data.reportId;
-      // console.log("ok2",reportData);
-      const genRes = await axios.get(
-        `${URL}/dashboard/report/generate/${reportId}`,
+
+      const saveRes = await axios.post(
+        `${BASE_URL}/dashboard/report/save`,
+        payload,
         { withCredentials: true }
       );
-      console.log("ok");
-      const downloadUrl = `${URL}${genRes.data.downloadUrl}`;
+
+      const reportId = saveRes.data.reportId;
+      const genRes = await axios.get(
+        `${BASE_URL}/dashboard/report/generate/${reportId}`,
+        { withCredentials: true }
+      );
+
+      const downloadUrl = `${BASE_URL}${genRes.data.downloadUrl}`;
       toast.success("PDF generated successfully!");
-      window.open(downloadUrl, "_blank");
+      window.location.href = downloadUrl;
     } catch (err) {
       console.error(err, "PDF Generation Error");
       toast.error(err?.response?.data?.error || "Failed to generate PDF");
@@ -115,22 +106,40 @@ const Dashboard_Reports = () => {
     <div>
       <div className="mt-6 p-3 flex flex-col gap-6">
         <div className="flex justify-between gap-4 flex-wrap">
-          <SummaryCard title="Total Balance" value={`₹${Number(user.Net_Saving) || 0}`} />
-          <SummaryCard title="Total Income" value={`₹${Number(user.monthly_income) || 0}`} />
-          <SummaryCard title="Total Expenses" value={`₹${Number(user.Expenses) || 0}`} />
-          <SummaryCard title="Average of Expenses" value={`₹${Number(user.Average) || 0}`} />
-          <SummaryCard title="Highest Spending Category" value={user.Highest ?? "N/A"} />
+          <SummaryCard
+            title="Total Balance"
+            value={`₹${Number(user.Net_Saving) || 0}`}
+          />
+          <SummaryCard
+            title="Total Income"
+            value={`₹${Number(user.monthly_income) || 0}`}
+          />
+          <SummaryCard
+            title="Total Expenses"
+            value={`₹${Number(user.Expenses) || 0}`}
+          />
+          <SummaryCard
+            title="Average of Expenses"
+            value={`₹${Number(user.Average) || 0}`}
+          />
+          <SummaryCard
+            title="Highest Spending Category"
+            value={user.Highest ?? "N/A"}
+          />
         </div>
       </div>
 
-      <div ref={reportRef} className="bg-white/5 p-6 min-h-screen rounded-3xl">
+      <div
+        ref={reportRef}
+        className="bg-white/5 p-6 min-h-screen rounded-3xl"
+      >
         <div className="bg-[#1a1a1a] text-white p-8 rounded-2xl mt-10 shadow-xl">
           <Monthweek_report chartRefs={chartRefs} />
 
           <div className="flex flex-col items-start mt-8">
             <button
               onClick={handleGeneratePDF}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium transition-all"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium transition-all cursor-pointer"
             >
               Download Monthly Expense Report (PDF)
             </button>

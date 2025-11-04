@@ -19,7 +19,6 @@ export async function generatePdfWithPuppeteer(report) {
     totalSaved: report.data?.totalSaved || 0,
     categoryData: report.data?.categoryData || [],
     insight: report.data?.insight || "",
-    charts: report.charts || [],
     generatedAt: new Date().toLocaleString(),
   };
 

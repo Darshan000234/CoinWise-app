@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bell, Trash2 } from "lucide-react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +9,7 @@ const URL = import.meta.env.VITE_URL;
 const Notification = () => {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const getData = async () => {
@@ -39,7 +40,15 @@ const Notification = () => {
     };
     validateSession();
   }, []);
-
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const clearAll = async () => {
     try {
       await axios.get(`${URL}/notification/deleteNotification`, {
@@ -53,7 +62,7 @@ const Notification = () => {
   };
 
   return (
-    <div className="relative cursor-pointer">
+    <div className="relative cursor-pointer" ref={dropdownRef}>
       <button
         onClick={() => {
           if (notifications.length > 0) setOpen(!open);

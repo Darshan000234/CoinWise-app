@@ -10,5 +10,6 @@ router.get('/line',isloggedIn.authMiddleware,ReportController.line);
 router.get('/data',isloggedIn.authMiddleware,ReportController.data);
 router.get('/generate/:id',isloggedIn.authMiddleware,ReportController.generate);
 router.post('/save',isloggedIn.authMiddleware,ReportController.save);
+router.get('/download/:id', isloggedIn.authMiddleware, ReportController.download);
 
 module.exports = router;
