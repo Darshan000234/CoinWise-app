@@ -212,8 +212,6 @@ const SignUp_Login = () => {
                 className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-300"
               >
                 <option value="INR">INR ₹</option>
-                <option value="USD">USD $</option>
-                <option value="EUR">EUR €</option>
               </select>
 
               <input
