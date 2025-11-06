@@ -6,6 +6,7 @@ import Notification from "../models/Notification.js";
 import nodemailer from "nodemailer";
 import path from "path";
 import Budget from "../models/Budget.js";
+import Transaction from "../models/Transaction.js";
 
 export const startReportCron = () => {
   const transporter = nodemailer.createTransport({
