@@ -36,8 +36,8 @@ export const startReportCron = () => {
         attachments: [{ filename: path.basename(pdfPath), path: pdfPath }],
       };
       Notification.create({
-        userId: user._id,
-        message: `Your monthly report for ${month} is ready and has been sent to your email.`,
+        user_id: user._id,
+        message: `Your monthly report for ${month} is ready...`
       });
       await transporter.sendMail(mailOptions);
       console.log(`📨 Report sent to ${user.email}`);
@@ -45,76 +45,77 @@ export const startReportCron = () => {
   }, { timezone: "Asia/Kolkata" });
 
   cron.schedule(
-    "*/2 * * * * *",
-    async () => {
-      console.log("Checking budgets for alert thresholds...");
+  "*/2 * * * * *",
+  async () => {
+    console.log("Checking budgets for alert thresholds...");
 
-      try {
-        const budgets = await Budget.find({}).populate("user_id");
+    try {
+      const budgets = await Budget.find({}).populate("user_id");
 
-        for (const budget of budgets) {
-          const { user_id, _id, category, limit, month } = budget;
+      for (const budget of budgets) {
+        const { user_id, _id, category, limit, month } = budget;
 
-          if (!user_id || !limit) continue;
+        if (!user_id || !limit) continue;
 
-          const startOfMonth = new Date(`${month}-01`);
-          const endOfMonth = new Date(startOfMonth);
-          endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+        const startOfMonth = new Date(`${month}-01`);
+        const endOfMonth = new Date(startOfMonth);
+        endOfMonth.setMonth(endOfMonth.getMonth() + 1);
 
-          const spendAgg = await Transaction.aggregate([
-            {
-              $match: {
-                user_id: user_id._id,
-                category: category,
-                date: { $gte: startOfMonth, $lt: endOfMonth },
-              },
+        const spendAgg = await Transaction.aggregate([
+          {
+            $match: {
+              user_id: user_id._id,
+              category: category,
+              date: { $gte: startOfMonth, $lt: endOfMonth },
             },
-            {
-              $group: {
-                _id: null,
-                totalSpend: { $sum: "$amount" },
-              },
-            },
-          ]);
+          },
+          { $group: { _id: null, totalSpend: { $sum: "$amount" } } },
+        ]);
 
-          const totalSpent = spendAgg.length > 0 ? spendAgg[0].totalSpend : 0;
+        const totalSpent = spendAgg.length > 0 ? spendAgg[0].totalSpend : 0;
 
-          budget.spent = totalSpent;
-          await budget.save();
+        budget.spent = totalSpent;
+        await budget.save();
 
-          const usagePercent = (totalSpent / limit) * 100;
+        const usagePercent = (totalSpent / limit) * 100;
 
-          let message = "";
-          if (usagePercent >= 80 && usagePercent < 100) {
-            message = `⚠️ You have used 80% of your budget for "${category}". Current usage: ₹${totalSpent}/${limit}.`;
-          } else if (usagePercent >= 100) {
-            message = `🚨 You have exceeded your budget limit for "${category}". Spent: ₹${totalSpent}/${limit}.`;
-          } else {
-            continue;
-          }
-
-          const existing = await Notification.findOne({
-            user_id: user_id._id,
-            budgetId: _id,
-            message,
-          });
-          if (existing) continue;
-
-          await Notification.create({
-            user_id: user_id,
-            budgetId: _id,
-            message,
-            type: "budgetAlert",
-            date: new Date(),
-          });
-
-          console.log(`🔔 Notification added for ${user_id.email}: ${message}`);
+        let message = "";
+        if (usagePercent >= 80 && usagePercent < 100) {
+          message = `⚠️ You have used 80% of your budget for "${category}". Current usage: ₹${totalSpent}/${limit}.`;
+        } else if (usagePercent >= 100) {
+          message = `🚨 You have exceeded your budget limit for "${category}". Spent: ₹${totalSpent}/${limit}.`;
+        } else {
+          continue;
         }
-      } catch (err) {
-        console.error("❌ Error checking budget alerts:", err);
+
+        const existing = await Notification.findOne({
+          user_id: user_id._id,
+          budget_id: _id,
+          message,
+        });
+
+        if (existing) continue;
+
+        await Notification.create({
+          user_id: user_id._id,
+          budget_id: _id,
+          message,
+        });
+
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: user_id.email,
+          subject: "Budget Alert – CoinWise",
+          text: message
+        });
+        console.log(`🔔 Notification added for ${user_id.email}: ${message}`);
       }
-    },
-    { timezone: "Asia/Kolkata" }
-  );
+    } catch (err) {
+      console.error("❌ Error checking budget alerts:", err);
+    }
+  },
+  { timezone: "Asia/Kolkata" }
+);
+
 
 };
