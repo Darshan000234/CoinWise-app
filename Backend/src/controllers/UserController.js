@@ -25,10 +25,10 @@ export const signUp = async (req, res) => {
 
         const token = generateToken(newUser._id, newUser.email);
         res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            maxAge: 24 * 60 * 60 * 1000
+          httpOnly: true,
+          secure: true,
+          sameSite: 'None',
+          maxAge: 24 * 60 * 60 * 1000,
         });
         res.status(201).json({ message: 'SignUp successful' });
     } catch (err) {
@@ -54,10 +54,10 @@ export const login = async (req, res) => {
 
         const token = generateToken(user._id, user.email);
         res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            maxAge: 24 * 60 * 60 * 1000
+          httpOnly: true,
+          secure: true,
+          sameSite: 'None',
+          maxAge: 24 * 60 * 60 * 1000,
         });
         res.json({ message: 'Login successful' });
     } catch (err) {
@@ -91,10 +91,10 @@ export const googleAuth = async (req, res) => {
         }
         const jwtToken = generateToken(user._id, user.email);
         res.cookie('token', jwtToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-            maxAge: 24 * 60 * 60 * 1000
+          httpOnly: true,
+          secure: true,
+          sameSite: 'None',
+          maxAge: 24 * 60 * 60 * 1000,
         });
         res.status(200).json({ message: message });
     } catch (error) {
@@ -106,10 +106,11 @@ export const googleAuth = async (req, res) => {
 export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'None',
         });
+
         return res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
         return res.status(500).json({ message: 'Logout failed', error: err.message });
@@ -243,9 +244,9 @@ export const updateProfile = async (req, res) => {
       case "account":
         await User.findByIdAndDelete(id);
         res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+          httpOnly: true,
+          secure: true,
+          sameSite: 'None',
         });
         return res.status(200).json({ message: 'Account deleted successfully' });
       default:

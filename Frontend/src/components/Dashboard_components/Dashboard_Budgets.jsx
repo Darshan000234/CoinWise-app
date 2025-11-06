@@ -36,7 +36,7 @@ const Dashboard_Budgets = () => {
         <AllBudget budget={budget}/>
       </div>
       <div className='self-center'>
-        <AddBudget />
+        <AddBudget budget={budget}/>
       </div>
     </div>
   )

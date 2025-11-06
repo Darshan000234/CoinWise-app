@@ -10,13 +10,13 @@ const AddBudget = ({ budget, onClose }) => {
     budget === undefined
       ? {
           _id: "",
-          date: "",
+          month: "",
           category: "",
           limit: "",
         }
       : {
           _id: budget._id,
-          date:budget.date && !isNaN(new Date(budget.date))
+          month:budget.month && !isNaN(new Date(budget.date))
                 ? new Date(budget.date).toISOString().split("T")[0]
                 : "",
           category: budget.category,
@@ -116,7 +116,7 @@ const AddBudget = ({ budget, onClose }) => {
           </label>
           <input
             type="month"
-            name="date"
+            name="month"
             value={form.date}
             onChange={handleChange}
             className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"

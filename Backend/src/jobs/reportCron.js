@@ -5,7 +5,8 @@ import { generatePdfWithPuppeteer } from "../utils/pdfGenerator.js";
 import Notification from "../models/Notification.js";
 import nodemailer from "nodemailer";
 import path from "path";
- 
+import Budget from "../models/Budget.js";
+
 export const startReportCron = () => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -24,7 +25,7 @@ export const startReportCron = () => {
       const report = await Report.findOne({ userId: user._id, month });
       await Notification.deleteMany({ user_id: user._id, isRead: true });
       if (!report) continue;
-      
+
       const pdfPath = await generatePdfWithPuppeteer(report);
       const mailOptions = {
         from: process.env.EMAIL_USER,
@@ -40,44 +41,72 @@ export const startReportCron = () => {
       await transporter.sendMail(mailOptions);
       console.log(`📨 Report sent to ${user.email}`);
     }
-  },{ timezone: "Asia/Kolkata" });
+  }, { timezone: "Asia/Kolkata" });
 
   cron.schedule(
-    "0 */6 * * *",
+    "*/2 * * * * *",
     async () => {
       console.log("Checking budgets for alert thresholds...");
-      
+
       try {
         const budgets = await Budget.find({}).populate("user_id");
 
         for (const budget of budgets) {
-          const { spent, limit, user_id, _id, category } = budget;
+          const { user_id, _id, category, limit, month } = budget;
 
-          if (!limit || !user_id) continue;
-          const usagePercent = (spent / limit) * 100;
+          if (!user_id || !limit) continue;
+
+          const startOfMonth = new Date(`${month}-01`);
+          const endOfMonth = new Date(startOfMonth);
+          endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+          const spendAgg = await Transaction.aggregate([
+            {
+              $match: {
+                user_id: user_id._id,
+                category: category,
+                date: { $gte: startOfMonth, $lt: endOfMonth },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                totalSpend: { $sum: "$amount" },
+              },
+            },
+          ]);
+
+          const totalSpent = spendAgg.length > 0 ? spendAgg[0].totalSpend : 0;
+
+          budget.spent = totalSpent;
+          await budget.save();
+
+          const usagePercent = (totalSpent / limit) * 100;
+
           let message = "";
-
           if (usagePercent >= 80 && usagePercent < 100) {
-            message = `⚠️ You have used 80% of your budget for "${category}". Current usage: ₹${spent}/${limit}.`;
-          }
-          else if (usagePercent >= 100) {
-            message = `🚨 You have exceeded your budget limit for "${category}". Spent: ₹${spent}/${limit}.`;
+            message = `⚠️ You have used 80% of your budget for "${category}". Current usage: ₹${totalSpent}/${limit}.`;
+          } else if (usagePercent >= 100) {
+            message = `🚨 You have exceeded your budget limit for "${category}". Spent: ₹${totalSpent}/${limit}.`;
           } else {
-            continue; 
+            continue;
           }
+
           const existing = await Notification.findOne({
-            userId: user_id._id,
+            user_id: user_id._id,
             budgetId: _id,
-            message: message,
+            message,
           });
           if (existing) continue;
+
           await Notification.create({
-            userId: user_id._id,
+            user_id: user_id,
             budgetId: _id,
             message,
             type: "budgetAlert",
             date: new Date(),
           });
+
           console.log(`🔔 Notification added for ${user_id.email}: ${message}`);
         }
       } catch (err) {
@@ -86,4 +115,5 @@ export const startReportCron = () => {
     },
     { timezone: "Asia/Kolkata" }
   );
+
 };

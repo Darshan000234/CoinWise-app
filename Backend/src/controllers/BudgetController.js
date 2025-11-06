@@ -63,3 +63,35 @@ export const BudgetData = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const AddBudget = async (req, res) => {
+  const userId = req.user.id;
+  const { _id, month, category, limit } = req.body;  
+  try {
+    const newBudget = new Budget({
+      user_id: userId,
+      category,
+      limit,
+      month,
+    });
+    await newBudget.save();
+    res.status(201).json({ message: "Budget added successfully"});
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+export const UpdateBudget = async (req, res) => {
+  const userId = req.user.id;
+  const { _id, month, category, limit } = req.body;
+  try {
+    await Budget.findByIdAndUpdate(_id, {
+      category,
+      limit,
+      month,
+    },{ new: true });
+    res.status(200).json({ message: "Budget updated successfully"});
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
