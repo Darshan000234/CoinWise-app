@@ -2,32 +2,29 @@ import axios from "axios";
 import React, { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 
-
 const URL = import.meta.env.VITE_URL;
 
 const AddBudget = ({ budget, onClose }) => {
+
   const [form, setForm] = useState(
-    budget === undefined
+    budget
       ? {
+          _id: budget._id,
+          month: budget.month,
+          category: budget.category,
+          limit: String(budget.limit),
+        }
+      : {
           _id: "",
           month: "",
           category: "",
           limit: "",
         }
-      : {
-          _id: budget._id,
-          month: budget ? budget.month : "",
-          category: budget.category,
-          limit: budget.limit.toLocaleString("en-IN", {
-            minimumFractionDigits: 2,
-          }),
-        }
   );
 
-  const [value, setValue] = useState(budget === undefined ? "" : "Update");
   const [customCategory, setCustomCategory] = useState("");
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef();
 
   const categories = [
     "Food",
@@ -52,14 +49,9 @@ const AddBudget = ({ budget, onClose }) => {
     setOpen(false);
   };
 
-  const handleCustomCategory = (e) => {
-    const value = e.target.value;
-    setCustomCategory(value);
-    setForm((prev) => ({ ...prev, category: value ? "" : prev.category }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const finalCategory = customCategory || form.category;
 
     if (!finalCategory) {
@@ -67,50 +59,52 @@ const AddBudget = ({ budget, onClose }) => {
       return;
     }
 
+    if (!form.limit) {
+      toast.error("Limit is required");
+      return;
+    }
+
     const currentMonth = new Date().toISOString().slice(0, 7);
 
-    const budgetPayload = {
+    const payload = {
       _id: form._id,
       month: form.month || currentMonth,
       category: finalCategory,
       limit: Number(form.limit),
     };
 
-    const destination = value.toLowerCase() === "update" ? "update" : "add";
+    const action = budget ? "update" : "add";
 
     try {
-      const res = await axios.post(
-        `${URL}/budget/${destination}`,
-        budgetPayload,
-        { withCredentials: true }
-      );
-      toast.success(res.data.message);
-      setForm({ _id: "", date: "", category: "", limit: "" });
-      setCustomCategory("");
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err.message, {
-        duration: 3000,
+      const res = await axios.post(`${URL}/budget/${action}`, payload, {
+        withCredentials: true,
       });
+      toast.success(res.data.message);
+
+      onClose?.();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message);
     }
   };
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const fn = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
   }, []);
 
   return (
     <div className="w-[450px] h-auto p-6 bg-[#1a1a1a] rounded-2xl shadow-md m-0">
       <h2 className="text-xl font-semibold mb-5 text-white">
-        {budget == undefined ? "Add Budget" : "Update Budget"}
+        {budget ? "Update Budget" : "Add Budget"}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Select Month
@@ -120,7 +114,7 @@ const AddBudget = ({ budget, onClose }) => {
             name="month"
             value={form.month}
             onChange={handleChange}
-            className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white"
           />
         </div>
 
@@ -137,19 +131,11 @@ const AddBudget = ({ budget, onClose }) => {
           </button>
 
           {open && (
-            <div
-              className="absolute left-0 right-0 mt-2 mx-1 bg-[#0d0d0d] border border-gray-600 rounded-md max-h-40 overflow-y-auto z-10 custom-scrollbar"
-              style={{
-                top: "calc(100% + 4px)",
-                paddingRight: "6px",
-                paddingTop: "4px",
-                paddingBottom: "4px",
-              }}
-            >
+            <div className="absolute left-0 right-0 mt-2 bg-[#0d0d0d] border border-gray-600 rounded-md z-10 max-h-40 overflow-y-auto">
               {categories.map((cat) => (
                 <div
                   key={cat}
-                  className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded"
+                  className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
                   onClick={() => handleCategorySelect(cat)}
                 >
                   {cat}
@@ -166,9 +152,9 @@ const AddBudget = ({ budget, onClose }) => {
           <input
             type="text"
             value={customCategory}
-            onChange={handleCustomCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
             placeholder="Enter custom category"
-            className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white"
           />
         </div>
 
@@ -176,30 +162,24 @@ const AddBudget = ({ budget, onClose }) => {
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Budget Limit (₹)
           </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              ₹
-            </span>
-            <input
-              type="text"
-              name="limit"
-              value={form.limit}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9.]/g, "");
-                setForm({ ...form, limit: value });
-              }}
-              placeholder="Enter limit amount"
-              className="w-full pl-7 pr-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+          <input
+            type="number"
+            name="limit"
+            value={form.limit}
+            onChange={(e) =>
+              setForm({ ...form, limit: e.target.value.replace(/[^0-9]/g, "") })
+            }
+            placeholder="Enter limit amount"
+            className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white"
+            required
+          />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition text-lg"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg"
         >
-          {value === "" ? "Add Budget" : "Update Budget"}
+          {budget ? "Update Budget" : "Add Budget"}
         </button>
       </form>
     </div>
