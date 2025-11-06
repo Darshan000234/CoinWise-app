@@ -3,7 +3,6 @@ import Transaction from '../models/Transaction.js';
 
 export const BudgetData = async (req, res) => {
   const userId = req.user.id;
-
   try {
     const budgets = await Budget.find({ user_id: userId });
 
@@ -14,10 +13,9 @@ export const BudgetData = async (req, res) => {
     const updatedBudgets = [];
 
     for (const b of budgets) {
-      const monthName = b.month || new Date(b.createdAt).toLocaleString("default", { month: "long" });
-      const year = b.year || new Date(b.createdAt).getFullYear();
+      const [year, month] = b.month.split("-");
 
-      const startOfMonth = new Date(`${year}-${new Date(Date.parse(monthName +" 1, "+year)).getMonth() + 1}-01`);
+      const startOfMonth = new Date(`${year}-${month}-01`);
       const endOfMonth = new Date(startOfMonth);
       endOfMonth.setMonth(endOfMonth.getMonth() + 1);
 
@@ -48,8 +46,8 @@ export const BudgetData = async (req, res) => {
         limit: b.limit,
         spent: totalSpent,
         remaining: b.limit - totalSpent,
-        month: monthName,
-        year,
+        month: b.month,
+        year: Number(year),
       });
     }
 
@@ -63,6 +61,7 @@ export const BudgetData = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 export const AddBudget = async (req, res) => {
   const userId = req.user.id;

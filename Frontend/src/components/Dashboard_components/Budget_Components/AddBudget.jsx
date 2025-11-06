@@ -16,9 +16,7 @@ const AddBudget = ({ budget, onClose }) => {
         }
       : {
           _id: budget._id,
-          month:budget.month && !isNaN(new Date(budget.date))
-                ? new Date(budget.date).toISOString().split("T")[0]
-                : "",
+          month: budget ? budget.month : "",
           category: budget.category,
           limit: budget.limit.toLocaleString("en-IN", {
             minimumFractionDigits: 2,
@@ -69,10 +67,13 @@ const AddBudget = ({ budget, onClose }) => {
       return;
     }
 
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
     const budgetPayload = {
-      ...form,
+      _id: form._id,
+      month: form.month || currentMonth,
       category: finalCategory,
-      date: !form.date || form.date === "01/01/0001" ? "" : form.date,
+      limit: Number(form.limit),
     };
 
     const destination = value.toLowerCase() === "update" ? "update" : "add";
@@ -117,7 +118,7 @@ const AddBudget = ({ budget, onClose }) => {
           <input
             type="month"
             name="month"
-            value={form.date}
+            value={form.month}
             onChange={handleChange}
             className="w-full px-4 py-3 bg-[#0d0d0d] border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
