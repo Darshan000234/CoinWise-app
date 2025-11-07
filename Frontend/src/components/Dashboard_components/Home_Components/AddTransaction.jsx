@@ -66,7 +66,7 @@ const AddTransaction = ({txn,onClose}) => {
     const transactionPayload = {
       ...form,
       category: finalCategory,
-      date: (!form.date || form.date === "01/01/0001") ? "" : form.date
+      date: form.date || new Date().toISOString().split("T")[0]
     };
     const destination = value.toLowerCase() === "update" ? "update" : "add";
     try {
@@ -227,7 +227,7 @@ const AddTransaction = ({txn,onClose}) => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition text-lg"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition text-lg cursor-pointer"
         >
           {value === "" ? "Add Transaction" : "Update Transaction"}
         </button>

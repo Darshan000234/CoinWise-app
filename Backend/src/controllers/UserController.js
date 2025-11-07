@@ -26,8 +26,8 @@ export const signUp = async (req, res) => {
         const token = generateToken(newUser._id, newUser.email);
         res.cookie('token', token, {
           httpOnly: true,
-          secure: true,
-          sameSite: 'None',
+          secure: false,          // ✅ correct for localhost
+          sameSite: 'Lax',        // ✅ works without HTTPS
           maxAge: 24 * 60 * 60 * 1000,
         });
         res.status(201).json({ message: 'SignUp successful' });
@@ -55,8 +55,8 @@ export const login = async (req, res) => {
         const token = generateToken(user._id, user.email);
         res.cookie('token', token, {
           httpOnly: true,
-          secure: true,
-          sameSite: 'None',
+          secure: false,          // ✅ correct for localhost
+          sameSite: 'Lax',        // ✅ works without HTTPS
           maxAge: 24 * 60 * 60 * 1000,
         });
         res.json({ message: 'Login successful' });
@@ -92,8 +92,8 @@ export const googleAuth = async (req, res) => {
         const jwtToken = generateToken(user._id, user.email);
         res.cookie('token', jwtToken, {
           httpOnly: true,
-          secure: true,
-          sameSite: 'None',
+          secure: false,          // ✅ correct for localhost
+          sameSite: 'Lax',        // ✅ works without HTTPS
           maxAge: 24 * 60 * 60 * 1000,
         });
         res.status(200).json({ message: message });
@@ -107,8 +107,8 @@ export const logout = async (req, res) => {
     try {
         res.clearCookie('token', {
           httpOnly: true,
-          secure: true,
-          sameSite: 'None',
+          secure: false,
+          sameSite: 'Lax',
         });
 
         return res.status(200).json({ message: 'Logged out successfully' });

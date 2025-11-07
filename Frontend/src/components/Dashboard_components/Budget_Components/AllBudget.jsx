@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, Pagination } from "@mui/material";
 import axios from "axios";
@@ -9,13 +9,17 @@ import AddBudget from "./AddBudget";
 const URL = import.meta.env.VITE_URL;
 
 const AllBudget = ({ budget }) => {
-  const [budgets, setBudgets] = useState(budget || []);
+  const [budgets, setBudgets] = useState([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [popup, setPopup] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const itemsPerPage = 6;
 
+  useEffect(() => {
+    setBudgets(budget || []);
+  }, [budget])
+  
   const safeNum = (val) => Number(val || 0);
 
   const filtered = budgets.filter((b) =>
@@ -54,9 +58,15 @@ const AllBudget = ({ budget }) => {
             paginated.map((b) => {
               const limit = safeNum(b.limit);
               const spent = safeNum(b.spent);
+              // console.log(spent);
               const remaining = limit - spent;
               const percent = Math.min((spent / limit) * 100 || 0, 100);
-
+              let barColor = "bg-green-500";
+              if (percent >= 100) {
+                barColor = "bg-red-600";
+              } else if (percent >= 80) {
+                barColor = "bg-yellow-500";
+              }
               return (
                 <motion.div
                   key={b._id}
@@ -76,10 +86,11 @@ const AllBudget = ({ budget }) => {
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${percent}%` }}
-                        transition={{ duration: 1.2 }}
-                        className="h-full rounded-full"
+                        transition={{ duration: 1.2, ease: "easeInOut" }}
+                        className={`h-full rounded-full ${barColor}`}
                       />
                     </div>
+
                     <span className="text-sm text-gray-300 font-medium">
                       {percent.toFixed(0)}%
                     </span>
@@ -105,6 +116,7 @@ const AllBudget = ({ budget }) => {
                         try {
                           await axios.post(`${URL}/budget/delete`, { id: b._id }, { withCredentials: true });
                           toast.success("Budget deleted");
+                          setBudgets(prev => prev.filter(t => t._id !== b._id));
                         } catch (err) {
                           toast.error(err?.response?.data?.message || err.message);
                         }

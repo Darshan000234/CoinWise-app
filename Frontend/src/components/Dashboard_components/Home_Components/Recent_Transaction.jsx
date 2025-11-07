@@ -69,7 +69,7 @@ const Recent_Transaction = ({ isCollapsed }) => {
                   <td className="px-4 py-2 text-center">
                     <button
                       onClick={() => handleDelete(index)}
-                      className="text-red-400 hover:text-red-600 font-medium"
+                      className="text-red-400 hover:text-red-600 font-medium cursor-pointer"
                     >
                       Delete
                     </button>
@@ -95,7 +95,7 @@ const Recent_Transaction = ({ isCollapsed }) => {
                 className="text-center py-2"
               >
                 <button
-                  className="text-blue-500 underline hover:text-blue-700"
+                  className="text-blue-500 underline hover:text-blue-700 cursor-pointer"
                   onClick={moreTransaction}
                 >
                   See All Transactions

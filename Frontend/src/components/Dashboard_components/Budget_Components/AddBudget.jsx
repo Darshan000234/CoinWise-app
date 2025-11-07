@@ -7,20 +7,21 @@ const URL = import.meta.env.VITE_URL;
 const AddBudget = ({ budget, onClose }) => {
 
   const [form, setForm] = useState(
-    budget
-      ? {
-          _id: budget._id,
-          month: budget.month,
-          category: budget.category,
-          limit: String(budget.limit),
-        }
-      : {
-          _id: "",
-          month: "",
-          category: "",
-          limit: "",
-        }
-  );
+  budget
+    ? {
+        _id: budget._id || "",
+        month: budget.month || "",      
+        category: budget.category || "",
+        limit: budget.limit ? String(budget.limit) : "",
+      }
+    : {
+        _id: "",
+        month: "",
+        category: "",
+        limit: "",
+      }
+);
+  // console.log(budget);
 
   const [customCategory, setCustomCategory] = useState("");
   const [open, setOpen] = useState(false);
@@ -58,12 +59,13 @@ const AddBudget = ({ budget, onClose }) => {
       toast.error("Category is required");
       return;
     }
-
+    console.log(0);
+    
     if (!form.limit) {
       toast.error("Limit is required");
       return;
     }
-
+    console.log(0);
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     const payload = {
@@ -100,7 +102,7 @@ const AddBudget = ({ budget, onClose }) => {
   return (
     <div className="w-[450px] h-auto p-6 bg-[#1a1a1a] rounded-2xl shadow-md m-0">
       <h2 className="text-xl font-semibold mb-5 text-white">
-        {budget ? "Update Budget" : "Add Budget"}
+        {budget === undefined ? "Add Budget" : "Update Budget"}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -177,9 +179,9 @@ const AddBudget = ({ budget, onClose }) => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg cursor-pointer"
         >
-          {budget ? "Update Budget" : "Add Budget"}
+          {budget === undefined ? "Add Budget" : "Update Budget"}
         </button>
       </form>
     </div>

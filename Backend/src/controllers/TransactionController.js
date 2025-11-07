@@ -61,10 +61,10 @@ export const TransactionDelete = async (req, res) => {
 }
 
 export const TransactionEdit = async (req, res) => { 
-  const {_id,feild,value} = req.body;
+  const {_id,...updates} = req.body;
   try {
     await Transaction.findByIdAndUpdate(_id,
-      { [feild] : value },
+      updates,
       { new: true, runValidators: true }
     );
     res.status(202).json({message : "Transaction Update Successfully"});

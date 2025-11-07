@@ -3,6 +3,7 @@ import AddBudget from './Budget_Components/AddBudget'
 import AllBudget from './Budget_Components/AllBudget'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const URL = import.meta.env.VITE_URL;
 const Dashboard_Budgets = () => {
@@ -36,7 +37,7 @@ const Dashboard_Budgets = () => {
         <AllBudget budget={budget}/>
       </div>
       <div className='self-center'>
-        <AddBudget budget={budget}/>
+        <AddBudget />
       </div>
     </div>
   )
