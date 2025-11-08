@@ -257,7 +257,6 @@ export const generate = async (req, res) => {
     const report = await Report.findById(req.params.id);
     if (!report) return res.status(404).json({ error: "Report not found" });
     const pdfPath = await generatePdfWithPuppeteer(report);
-    // console.log(report.charts);
     report.pdfPath = pdfPath;
     report.generatedAt = new Date();
     await report.save();

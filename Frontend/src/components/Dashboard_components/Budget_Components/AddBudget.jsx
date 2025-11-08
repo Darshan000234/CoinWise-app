@@ -21,7 +21,6 @@ const AddBudget = ({ budget, onClose }) => {
         limit: "",
       }
 );
-  // console.log(budget);
 
   const [customCategory, setCustomCategory] = useState("");
   const [open, setOpen] = useState(false);

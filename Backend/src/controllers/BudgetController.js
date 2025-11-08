@@ -4,8 +4,6 @@ import Notification from '../models/Notification.js';
 import nodemailer from "nodemailer";
 
 
-// console.log(process.env.EMAIL_USER);
-// console.log(process.env.EMAIL_PASS);
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {

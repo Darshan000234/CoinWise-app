@@ -15,8 +15,8 @@ const Dashboard_Transaction = () => {
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState("desc");
   const [page, setPage] = useState(1);
-  const [popup, setPopup] = useState(null); // stores selected transaction
-  const [isPopupOpen, setIsPopupOpen] = useState(false); // controls popup visibility
+  const [popup, setPopup] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const itemsPerPage = 12;
 
   useEffect(() => {
@@ -51,7 +51,6 @@ const Dashboard_Transaction = () => {
     );
   });
 
-  // ✅ Sort by date
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
     if(order === "Aasc"){
       return (a.amount) - (b.amount);
@@ -64,14 +63,12 @@ const Dashboard_Transaction = () => {
       : new Date(b.date) - new Date(a.date);
   });
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage);
   const paginatedTransactions = sortedTransactions.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
 
-  // ✅ Toggle sort order
   const toggleSort = (value) => {
     if (value === "amount") {
       setOrder(order === "Aasc" ? "Adesc" : "Aasc");
@@ -82,8 +79,8 @@ const Dashboard_Transaction = () => {
   };
 
   const EditData = (txn) => {
-    setPopup(txn);           // store transaction data
-    setIsPopupOpen(true);    // open dialog
+    setPopup(txn);
+    setIsPopupOpen(true);
   };
 
   const handleClose = () => {
@@ -101,13 +98,11 @@ const Dashboard_Transaction = () => {
   }
   return (
      <div className="p-6 text-white min-h-screen flex flex-col items-center bg-[#262626] rounded-3xl transition-all duration-[0.7s] ease-in">
-      {/* Header with Icon */}
       <div className="flex items-center justify-center gap-2 mb-8">
-        <Receipt className="w-7 h-7 text-green-400" /> {/* ✅ Transaction Icon */}
+        <Receipt className="w-7 h-7 text-green-400" />
         <h2 className="text-3xl font-semibold text-center">All Transactions</h2>
       </div>
 
-      {/* Search Bar */}
       <div className="mb-6 w-full flex justify-center">
         <div className="relative w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -121,7 +116,6 @@ const Dashboard_Transaction = () => {
         </div>
       </div>
 
-      {/* Styled Table Wrapper */}
       <div className="rounded-2xl overflow-hidden shadow-md bg-[#1a1a1a] w-full max-w-5xl">
         <table className="w-full border-collapse">
           <thead className="bg-[#0d0d0d] text-gray-300 uppercase text-xs tracking-wider">
@@ -202,7 +196,6 @@ const Dashboard_Transaction = () => {
         </table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <Pagination
@@ -224,7 +217,6 @@ const Dashboard_Transaction = () => {
           />
         </div>
       )}
-      {/* Popup Animation */}
       <AnimatePresence>
         {isPopupOpen && (
           <Dialog

@@ -47,7 +47,6 @@ const Dashboard_Setting = () => {
   
   const handleSave = async (section, data) => {
     setters[section](data);
-    // console.log(data);
     try {
       await axios.post(
         `${URL}/user/settings_update/${section}`,

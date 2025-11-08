@@ -58,7 +58,6 @@ const AllBudget = ({ budget }) => {
             paginated.map((b) => {
               const limit = safeNum(b.limit);
               const spent = safeNum(b.spent);
-              // console.log(spent);
               const remaining = limit - spent;
               const percent = Math.min((spent / limit) * 100 || 0, 100);
               let barColor = "bg-green-500";
